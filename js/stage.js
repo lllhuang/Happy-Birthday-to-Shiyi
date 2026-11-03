@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611031323';
-import { audio } from './audio.js?v=202611031323';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611031323';
-import { listenForBlow } from './blow.js?v=202611031323';
-import { HAND } from './hand.js?v=202611031323';
+import { CONTENT } from './content.js?v=202611031358';
+import { audio } from './audio.js?v=202611031358';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611031358';
+import { listenForBlow } from './blow.js?v=202611031358';
+import { HAND } from './hand.js?v=202611031358';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -426,7 +426,7 @@ export class Stage {
       this._hint('');
       await sleep(900);
       this.state = 'open';
-      this._hint(C.night.tapSky);
+      this._hint(C.night.tapSky, { belowSill: true });
       this._mine = 0;
       this._autoN = 0;
       this._hearts = [6, 14];
