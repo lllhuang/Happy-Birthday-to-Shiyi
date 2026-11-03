@@ -1,5 +1,5 @@
 // 加载页的进度条：一笔毛笔字的横。按进度条的实际大小现画，宽屏上也不会被拉变形。
-// 墨迹是一根根笔毛叠出来的：起笔斜着按下去最重，中段轻重有自然的起伏，上下两条边各自起伏；
+// 墨迹是一根根笔毛叠出来的：起笔斜着落下，一笔里粗、细、粗、细地起伏，上下两条边各自起伏；
 // 墨从左往右慢慢变少，笔毛一簇一簇分开、被纸纹截断，越到后面飞白越多。随机数固定，每次画出来都一样。
 
 function rng(seed) {
@@ -53,10 +53,18 @@ function* inkMap(W, H, seed = 27) {
   const rand = rng(seed);
   const T = H * 0.44; // 正常压力下的笔画粗细
   const yc = H * 0.5;
-  // 压力：起笔顿一下最重，随即提笔，中段有几处自然的轻重，收笔前略按一下再提起
-  const wobble = noise1(rand, 3), wobble2 = noise1(rand, 9);
-  const pressure = (x, u) =>
-    0.94 + 0.36 * (1 - smooth(T * 0.5, T * 3.4, x)) + 0.2 * wobble(u) + 0.07 * wobble2(u) + 0.07 * smooth(0.68, 0.84, u) - 0.28 * smooth(0.9, 1, u);
+  // 压力：一笔里按下、提起、再按下、再提起，粗细粗细地走；最后提笔出飞白。
+  // 几个转折点的位置和轻重各带一点随机，不会像尺子量出来的那么整齐
+  const knots = [[0, 1.02], [0.17, 1.3], [0.39, 0.78], [0.61, 1.24], [0.81, 0.8], [0.92, 0.88], [1, 0.64]].map(([k, v], i, all) =>
+    [i && i < all.length - 1 ? k + (rand() - 0.5) * 0.04 : k, v + (rand() - 0.5) * 0.06]);
+  const wobble2 = noise1(rand, 9);
+  const pressure = (x, u) => {
+    let i = 1;
+    while (i < knots.length - 1 && knots[i][0] < u) i++;
+    const [k0, v0] = knots[i - 1], [k1, v1] = knots[i];
+    const t = Math.min(1, Math.max(0, (u - k0) / (k1 - k0)));
+    return v0 + (v1 - v0) * (1 - Math.cos(t * Math.PI)) / 2 + 0.05 * wobble2(u);
+  };
   // 上下两条边各自起伏：低频的轻重加高频的毛糙，毛糙的频率按像素算，宽窄屏一样碎
   const nE = Math.max(30, Math.round(W / (H * 0.18)));
   const eT = [noise1(rand, 4), noise1(rand, nE), noise1(rand, nE * 3)];
@@ -92,7 +100,7 @@ function* inkMap(W, H, seed = 27) {
     yield;
     const u = x / (W - 1);
     const half = (T / 2) * pressure(x, u);
-    const top = yc - half * (1 + edge(eT, u)) - half * 0.16 * (1 - smooth(T * 0.5, T * 3, x));
+    const top = yc - half * (1 + edge(eT, u)) - half * 0.1 * (1 - smooth(T * 0.5, T * 3, x));
     const bot = yc + half * (1 + edge(eB, u));
     // 笔上的墨：越写越少；到后段，毛和毛之间开始出现飞白
     const ink = 1 - 0.38 * Math.pow(u, 1.6);
