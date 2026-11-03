@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611031358') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611031358') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611031414') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611031414') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -453,7 +453,7 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 .wall::after { content: ''; position: absolute; inset: 0; opacity: .07; background-image: radial-gradient(circle at 25% 25%, #fff 1px, transparent 1.5px), radial-gradient(circle at 75% 75%, #fff 1px, transparent 1.5px); background-size: 34px 34px; }
 #st-room.morning .wall::after { background-image: radial-gradient(circle at 25% 25%, #5B8FE0 1px, transparent 1.5px), radial-gradient(circle at 75% 75%, #5B8FE0 1px, transparent 1.5px); opacity: .18; }
 .wall-flash { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
-.room-top { position: absolute; top: calc(5vh + var(--safe-top)); left: 0; right: 0; text-align: center; font-size: clamp(26px, 3.6vh, 40px); letter-spacing: .3em; z-index: 6; transition: opacity .6s; }
+.room-top { position: absolute; bottom: calc(9vh + var(--safe-bot)); left: 0; right: 0; line-height: 1; text-align: center; font-size: clamp(26px, 3.6vh, 40px); letter-spacing: .3em; padding-left: .3em; z-index: 6; transition: opacity .6s; }
 .room-top small { display: block; font-size: 15px; opacity: .6; margin-top: 4px; letter-spacing: .1em; }
 #st-room.morning .room-top { color: var(--ink-text); }
 .window-wrap { --winH: min(60vh, 120vw); position: absolute; left: 50%; top: calc(13vh + var(--safe-top)); width: min(84vw, 72vh); transform: translateX(-50%); z-index: 2; transition: transform 2.2s cubic-bezier(.37,0,.63,1); } /* 镜头推近、拉回：慢一点、缓一点 */

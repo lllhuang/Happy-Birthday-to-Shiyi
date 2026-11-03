@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611031358';
-import { audio } from './audio.js?v=202611031358';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611031358';
-import { listenForBlow } from './blow.js?v=202611031358';
-import { HAND } from './hand.js?v=202611031358';
+import { CONTENT } from './content.js?v=202611031414';
+import { audio } from './audio.js?v=202611031414';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611031414';
+import { listenForBlow } from './blow.js?v=202611031414';
+import { HAND } from './hand.js?v=202611031414';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -593,11 +593,15 @@ export class Stage {
     await sleep(3200);
     this._lightButtons(true);
     audio.chirp();
-    this.top.textContent = C.morning.title;
+    // “龙复苏”在窗户下面闪两下就消失，接着出现“推开窗看看吧”，两句在同一个位置
+    // 先藏起来再填字，免得字一出来就整个亮一下再淡掉
     this.top.style.opacity = 0;
     await sleep(900);
-    this.top.style.opacity = 1;
-    await sleep(900);
+    this.top.textContent = C.morning.title;
+    await this.top.animate(
+      [{ opacity: 0 }, { opacity: 1, offset: 0.2 }, { opacity: 1, offset: 0.3 }, { opacity: 0, offset: 0.48 }, { opacity: 1, offset: 0.66 }, { opacity: 1, offset: 0.78 }, { opacity: 0 }],
+      { duration: 2800, easing: 'ease-in-out' },
+    ).finished;
     this.state = 'm-closed';
     this._hint(C.morning.open);
     if (toLetter) {
