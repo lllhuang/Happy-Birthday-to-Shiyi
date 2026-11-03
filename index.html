@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#141936" />
+<title>祝冯诗意小朋友生日快乐！</title>
+<meta name="description" content="给冯诗意的生日梦境" />
+<meta property="og:title" content="祝冯诗意小朋友生日快乐！" />
+<meta property="og:description" content="今晚你会做一个很长的梦。" />
+<link rel="preload" href="assets/fonts/yozai.woff?v=202611030422" as="font" type="font/woff" crossorigin />
+<link rel="preload" href="assets/img/paper-texture.png" as="image" />
+<link rel="stylesheet" href="css/main.css?v=202611030422" />
+</head>
+<body class="no-scroll">
+
+<!-- 背景：随滚动渐变 -->
+<div id="bg" aria-hidden="true"><canvas id="stars"></canvas></div>
+
+<button id="sound" class="sound-btn" aria-label="关闭声音" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="wave" d="M16 8.5c1.2 1 1.8 2.2 1.8 3.5s-.6 2.5-1.8 3.5M18.5 6c2 1.6 3 3.6 3 6s-1 4.4-3 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="mute" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+</button>
+
+<!-- 章节：平时只有一个小按钮，点开才出现进度条 -->
+<button id="chapters-btn" class="sound-btn" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="6" cy="12" r="2.4" fill="currentColor"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/><circle cx="18" cy="12" r="2.4" fill="currentColor"/></svg>
+</button>
+<div id="chapters" hidden><div id="ch-bar" class="ch-bar"></div></div>
+<button id="resume" hidden></button>
+
+<!-- 定时锁 -->
+<section id="lock" hidden>
+  <div class="lock-moon"></div>
+  <h1 class="lock-title" data-t="lock.title"></h1>
+  <div class="lock-count" aria-live="polite">
+    <span><b id="cd-d">0</b><i>天</i></span><span><b id="cd-h">00</b><i>时</i></span><span><b id="cd-m">00</b><i>分</i></span><span><b id="cd-s">00</b><i>秒</i></span>
+  </div>
+  <p class="lock-sub" data-t="lock.sub"></p>
+</section>
+
+<main id="dream">
+  <!-- 入口：睡着了 -->
+  <section id="s-entry" class="scene">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="zzz" aria-hidden="true"><span>z</span><span>z</span><span>z</span></div>
+    <figure class="polaroid entry-photo">
+      <img src="assets/img/usagi-blanket.jpg" alt="盖着粉色小被子的乌萨奇" draggable="false" />
+      <figcaption data-t="entry.caption"></figcaption>
+    </figure>
+    <div class="entry-copy">
+      <p class="hush" data-t="entry.hush"></p>
+      <p class="entry-line" data-t="entry.line"></p>
+    </div>
+    <button id="hold" class="hold-btn">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle class="ring-bg" cx="32" cy="32" r="29"/><circle class="ring" cx="32" cy="32" r="29"/><path class="moon" d="M38 20a13 13 0 1 0 6 22 11 11 0 0 1-6-22z"/></svg>
+      <span data-t="entry.hold"></span>
+    </button>
+  </section>
+
+  <!-- 雾蓝云上 -->
+  <section id="s-cloud" class="scrolly" data-h="320">
+    <div class="sticky">
+      <svg class="rainbow" id="rainbow" viewBox="0 0 400 206" aria-hidden="true">
+        <g fill="none" stroke-width="10">
+          <path d="M20 206a180 180 0 0 1 360 0" stroke="#F7B8C4"/>
+          <path d="M30 206a170 170 0 0 1 340 0" stroke="#FBD3A8"/>
+          <path d="M40 206a160 160 0 0 1 320 0" stroke="#FBEDB0"/>
+          <path d="M50 206a150 150 0 0 1 300 0" stroke="#BFE8CF"/>
+          <path d="M60 206a140 140 0 0 1 280 0" stroke="#B5D9F5"/>
+          <path d="M70 206a130 130 0 0 1 260 0" stroke="#CFC4F2"/>
+        </g>
+      </svg>
+      <div class="clouds" id="clouds"></div>
+      <svg class="plane" id="plane" viewBox="0 0 48 32" aria-hidden="true">
+        <path d="M2 17 46 2 20 22z" fill="#FFFFFF"/>
+        <path d="M46 2 30 30 20 22z" fill="#EAF1FB"/>
+        <path d="M20 22l-2 8 7-5z" fill="#C9D9F0"/>
+      </svg>
+      <div class="beats">
+        <p class="beat" data-t="cloud.beats.0"></p>
+        <p class="beat" data-t="cloud.beats.1"></p>
+      </div>
+      <figure class="polaroid floaty" id="pol-trio">
+        <img src="assets/img/trio.jpg" alt="穿猫咪衣服的三小只" draggable="false" />
+        <figcaption data-t="cloud.trioCaption"></figcaption>
+      </figure>
+      <figure class="polaroid floaty" id="pol-family">
+        <img src="assets/img/plush-family.jpg" alt="一床的吉伊卡哇毛绒" draggable="false" />
+        <figcaption data-t="cloud.familyCaption"></figcaption>
+      </figure>
+      <figure class="polaroid floaty" id="pol-rei">
+        <img src="assets/img/rei.jpg" alt="绫波丽手办" draggable="false" />
+        <figcaption data-t="cloud.reiCaption"></figcaption>
+      </figure>
+      <div class="gifts" id="gifts"></div>
+      <p class="tap-hint" data-t="cloud.tapHint"></p>
+    </div>
+  </section>
+
+  <!-- 深紫琴房 -->
+  <section id="s-music" class="scrolly" data-h="240">
+    <div class="sticky">
+      <div class="room" id="room" aria-hidden="true">
+        <div class="rm-halo"></div>
+        <svg class="rm-moon" viewBox="-24 -24 48 48">
+          <defs>
+            <mask id="rmMoon"><circle r="20" fill="#fff"/><circle cx="9" cy="-2" r="19" fill="#000"/></mask>
+            <radialGradient id="rmMoonG"><stop offset=".6" stop-color="#FFF6DA"/><stop offset="1" stop-color="#F2DFA8"/></radialGradient>
+          </defs>
+          <circle r="20" fill="url(#rmMoonG)" mask="url(#rmMoon)"/>
+        </svg>
+        <div class="rm-water"><canvas id="glints"></canvas></div>
+        <div class="rm-warm"></div>
+      </div>
+      <blockquote class="quote">
+        <p data-t="music.quote"></p>
+      </blockquote>
+      <div class="instruments">
+        <button class="inst" id="guitar" aria-label="吉他">
+          <svg viewBox="0 0 120 300" class="guitar-svg" aria-hidden="true">
+            <defs>
+              <radialGradient id="wood" cx="45%" cy="35%" r="75%"><stop offset="0" stop-color="#F0C48C"/><stop offset=".6" stop-color="#D59A5C"/><stop offset="1" stop-color="#9C5F33"/></radialGradient>
+            </defs>
+            <g class="guitar-body">
+              <path d="M50 4h20l3 24H47z" fill="#2B1A12"/>
+              <g fill="#E8D7B8"><circle cx="45" cy="9" r="2.6"/><circle cx="45" cy="17" r="2.6"/><circle cx="45" cy="25" r="2.6"/><circle cx="75" cy="9" r="2.6"/><circle cx="75" cy="17" r="2.6"/><circle cx="75" cy="25" r="2.6"/></g>
+              <rect x="52" y="27" width="16" height="140" rx="2" fill="#3A2416"/>
+              <g stroke="#C9B48F" stroke-width=".8"><path d="M52 45h16M52 62h16M52 78h16M52 93h16M52 107h16M52 120h16M52 132h16M52 143h16"/></g>
+              <g fill="#EDE3CF"><circle cx="60" cy="70" r="1.4"/><circle cx="60" cy="100" r="1.4"/><circle cx="60" cy="126" r="1.4"/></g>
+              <path d="M60 140c-22 0-34 12-34 32 0 12 6 20 6 26 0 6-14 14-14 36 0 26 20 44 42 44s42-18 42-44c0-22-14-30-14-36 0-6 6-14 6-26 0-20-12-32-34-32z" transform="translate(60 0) scale(1.24 1) translate(-60 0)" fill="url(#wood)" stroke="#6E3F20" stroke-width="2"/>
+              <path d="M70 212c10 4 16 14 12 24-8-4-14-12-12-24z" transform="translate(60 0) scale(1.24 1) translate(-60 0)" fill="#5A3826" opacity=".55"/>
+              <circle cx="60" cy="200" r="15" fill="#24130A"/>
+              <circle cx="60" cy="200" r="18" fill="none" stroke="#F2D9AE" stroke-width="2" stroke-dasharray="2 2"/>
+              <rect x="44" y="248" width="32" height="7" rx="2" fill="#3A2416"/>
+            <g class="strings" stroke="#F7EEDC" stroke-linecap="round">
+              <path class="str" d="M55 10V251" stroke-width="1.1"/>
+              <path class="str" d="M57 10V251" stroke-width="1"/>
+              <path class="str" d="M59 10V251" stroke-width=".9"/>
+              <path class="str" d="M61 10V251" stroke-width=".8"/>
+              <path class="str" d="M63 10V251" stroke-width=".7"/>
+              <path class="str" d="M65 10V251" stroke-width=".6"/>
+            </g>
+            </g>
+          </svg>
+          <span class="inst-label" data-t="music.guitar"></span>
+        </button>
+        <button class="inst" id="piano-btn" aria-label="钢琴">
+          <svg viewBox="0 0 220 200" class="piano-svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="lacquer" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A2F5C"/><stop offset="1" stop-color="#14101F"/></linearGradient>
+            </defs>
+            <rect x="4" y="10" width="212" height="14" rx="4" fill="#4A3C72"/>
+            <rect x="12" y="22" width="196" height="150" rx="6" fill="url(#lacquer)"/>
+            <path d="M24 30h172" stroke="#8E7FC2" stroke-width="1" opacity=".5"/>
+            <rect x="78" y="34" width="64" height="44" rx="2" fill="#F6F2EA" transform="rotate(-3 110 56)"/>
+            <g stroke="#9C93B5" stroke-width=".7" transform="rotate(-3 110 56)"><path d="M84 44h52M84 48h52M84 52h52M84 56h52M84 60h52"/></g>
+            <g fill="#2A2340" transform="rotate(-3 110 56)"><circle cx="94" cy="56" r="2.2"/><circle cx="104" cy="50" r="2.2"/><circle cx="116" cy="54" r="2.2"/><circle cx="127" cy="48" r="2.2"/></g>
+            <rect x="6" y="94" width="208" height="10" rx="2" fill="#241C38"/>
+            <g class="mini-keys">
+              <rect x="14" y="104" width="192" height="26" fill="#F7F4EE"/>
+              <g stroke="#CFC8DA" stroke-width="1"><path d="M27.7 104v26M41.4 104v26M55.1 104v26M68.8 104v26M82.5 104v26M96.2 104v26M109.9 104v26M123.6 104v26M137.3 104v26M151 104v26M164.7 104v26M178.4 104v26M192.1 104v26"/></g>
+              <g fill="#1A1526"><rect x="23" y="104" width="8" height="16"/><rect x="37" y="104" width="8" height="16"/><rect x="64" y="104" width="8" height="16"/><rect x="78" y="104" width="8" height="16"/><rect x="92" y="104" width="8" height="16"/><rect x="119" y="104" width="8" height="16"/><rect x="133" y="104" width="8" height="16"/><rect x="160" y="104" width="8" height="16"/><rect x="174" y="104" width="8" height="16"/><rect x="188" y="104" width="8" height="16"/></g>
+            </g>
+            <rect x="20" y="138" width="180" height="28" rx="3" fill="none" stroke="#5B4C86" stroke-width="1"/>
+            <rect x="18" y="170" width="10" height="24" fill="#14101F"/><rect x="192" y="170" width="10" height="24" fill="#14101F"/>
+            <g fill="#E3C27A"><rect x="94" y="182" width="9" height="4" rx="2"/><rect x="106" y="182" width="9" height="4" rx="2"/><rect x="118" y="182" width="9" height="4" rx="2"/></g>
+          </svg>
+          <span class="inst-label" data-t="music.piano"></span>
+        </button>
+      </div>
+      <p class="next-hint" data-t="music.next"></p>
+    </div>
+  </section>
+
+  <!-- 黑红：剑气与彼岸花 -->
+  <section id="s-ink" class="scrolly" data-h="320">
+    <div class="sticky">
+      <svg class="ink-defs" aria-hidden="true" width="0" height="0">
+        <filter id="inkEdge"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="26"/></filter>
+        <filter id="inkSoft"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="40"/><feGaussianBlur stdDeviation="1.2"/></filter>
+      </svg>
+      <div class="ink-glow" aria-hidden="true"></div>
+      <canvas class="embers" id="embers"></canvas>
+      <svg class="slashes" id="slashes" aria-hidden="true"></svg>
+      <canvas class="lily" id="lily" aria-hidden="true"></canvas>
+      <svg class="mountains" viewBox="0 0 400 220" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 120 C40 90 70 60 110 80 S170 40 210 70 S290 50 330 85 S380 70 400 90 V220 H0Z" fill="#1E1A24" opacity=".7"/>
+        <path d="M0 160 C50 120 90 130 130 110 S200 140 240 115 S320 120 360 105 S390 120 400 125 V220 H0Z" fill="#110E15" opacity=".95"/>
+        <path d="M0 200 C60 180 120 190 180 175 S300 195 400 180 V220 H0Z" fill="#050307"/>
+      </svg>
+      <svg class="plum" viewBox="0 0 200 160" aria-hidden="true">
+        <path d="M0 30 C40 36 70 50 100 70 C120 84 136 104 150 130 M70 50 C80 30 96 20 116 16 M110 78 C130 70 150 72 168 80" fill="none" stroke="#2A2030" stroke-width="5" stroke-linecap="round"/>
+        <g fill="#F4B6C2"><circle cx="116" cy="16" r="6"/><circle cx="168" cy="80" r="6"/><circle cx="150" cy="130" r="5"/><circle cx="84" cy="38" r="4.5"/><circle cx="132" cy="96" r="5"/><circle cx="40" cy="36" r="4"/></g>
+        <g fill="#C3122F"><circle cx="116" cy="16" r="1.6"/><circle cx="168" cy="80" r="1.6"/><circle cx="150" cy="130" r="1.4"/></g>
+      </svg>
+    </div>
+  </section>
+</main>
+
+<!-- 水墨加载 -->
+<section id="loading" hidden>
+  <div class="ld-sky" aria-hidden="true"></div>
+  <canvas class="embers" id="ld-embers"></canvas>
+  <svg class="ld-moon" viewBox="-110 -110 220 220" aria-hidden="true">
+    <defs>
+      <mask id="ldm"><circle r="96" fill="#fff"/><circle cx="44" cy="-10" r="92" fill="#000"/></mask>
+      <radialGradient id="ldmg" cx="30%" cy="45%" r="80%"><stop offset="0" stop-color="#FFE7B0"/><stop offset=".45" stop-color="#FF8A6A"/><stop offset="1" stop-color="#D7263D"/></radialGradient>
+    </defs>
+    <circle r="96" fill="url(#ldmg)" mask="url(#ldm)"/>
+  </svg>
+  <svg class="ld-hills" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 70 C50 50 90 56 140 46 S230 60 280 44 S360 52 400 48 V120 H0Z" fill="#120A16"/>
+    <path d="M0 96 C60 84 130 92 200 86 S330 90 400 84 V120 H0Z" fill="#07040A"/>
+  </svg>
+  <div class="ld-lilies" id="ld-lilies" aria-hidden="true"></div>
+  <div class="ld-title">
+    <h2 data-t="ink.title"></h2>
+    <p class="gilt" data-t="ink.sub"></p>
+  </div>
+  <div class="ld-bottom">
+    <svg class="ld-bar" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="barg" x1="0" x2="1"><stop offset="0" stop-color="#E3243B"/><stop offset=".7" stop-color="#FF8A6A"/><stop offset="1" stop-color="#FFD58A"/></linearGradient></defs>
+      <path d="M4 13 C60 9 120 15 180 11 S260 14 296 12" class="bar-bg"/>
+      <path id="bar" d="M4 13 C60 9 120 15 180 11 S260 14 296 12" class="bar-fg" pathLength="100"/>
+    </svg>
+    <div class="ld-meta"><span id="ld-tip"></span><span id="ld-pct">0%</span></div>
+    <p class="ld-tap" id="ld-tap" data-t="ink.tap"></p>
+  </div>
+</section>
+
+<!-- 结尾舞台 -->
+<section id="stage" hidden>
+  <!-- 蛋糕 -->
+  <div class="st" id="st-cake">
+    <div class="cake-glow" aria-hidden="true"></div>
+    <p class="cake-top" data-t="cake.top"></p>
+    <div class="cake-wrap" id="cake">
+      <svg viewBox="0 0 300 300" class="cake-svg" aria-label="生日蛋糕">
+        <defs>
+          <pattern id="stripeP" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="10" height="10" fill="#FFF"/><rect width="4.5" height="10" fill="#F2A7B8"/></pattern>
+          <pattern id="stripeB" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="10" height="10" fill="#FFF"/><rect width="4.5" height="10" fill="#8FB8E8"/></pattern>
+          <radialGradient id="flameG" cx="50%" cy="70%" r="60%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".35" stop-color="#FFF1B8"/><stop offset=".7" stop-color="#FFC24D"/><stop offset="1" stop-color="#FF8A2B"/></radialGradient>
+          <radialGradient id="haloG"><stop offset="0" stop-color="#FFD58A" stop-opacity=".55"/><stop offset="1" stop-color="#FFD58A" stop-opacity="0"/></radialGradient>
+          <path id="tinyStar" d="M0 -4 C.5 -1 1 -.5 4 0 C1 .5 .5 1 0 4 C-.5 1 -1 .5 -4 0 C-1 -.5 -.5 -1 0 -4Z"/>
+        </defs>
+        <ellipse cx="150" cy="268" rx="138" ry="20" fill="#000" opacity=".25"/>
+        <ellipse cx="150" cy="262" rx="132" ry="18" fill="#EEF2F8"/>
+        <ellipse cx="150" cy="258" rx="120" ry="13" fill="#FFFFFF"/>
+        <!-- 下层 -->
+        <path d="M48 176 V246 C48 258 96 266 150 266 S252 258 252 246 V176Z" fill="#BCD4F1"/>
+        <ellipse cx="150" cy="176" rx="102" ry="17" fill="#D6E6F8"/>
+        <path d="M48 176 C48 186 54 196 58 186 C62 200 70 204 74 190 C80 206 90 206 96 192 C102 210 114 208 118 194 C124 210 136 212 142 196 C148 212 160 212 166 196 C172 210 184 208 190 194 C196 208 206 206 212 190 C218 202 228 202 232 188 C238 198 248 192 252 176 C220 192 80 192 48 176Z" fill="#FFFFFF"/>
+        <g fill="#5B8FE0"><use href="#tinyStar" x="72" y="222"/><use href="#tinyStar" x="110" y="236"/><use href="#tinyStar" x="152" y="224"/><use href="#tinyStar" x="196" y="238"/><use href="#tinyStar" x="230" y="220"/><use href="#tinyStar" x="132" y="250"/><use href="#tinyStar" x="90" y="250" transform="scale(1)"/></g>
+        <g fill="#FFFFFF"><circle cx="58" cy="248" r="4"/><circle cx="72" cy="253" r="4"/><circle cx="88" cy="257" r="4"/><circle cx="105" cy="260" r="4"/><circle cx="122" cy="262" r="4"/><circle cx="140" cy="263" r="4"/><circle cx="158" cy="263" r="4"/><circle cx="176" cy="262" r="4"/><circle cx="194" cy="260" r="4"/><circle cx="211" cy="257" r="4"/><circle cx="227" cy="253" r="4"/><circle cx="242" cy="248" r="4"/></g>
+        <!-- 上层 -->
+        <path d="M86 118 V168 C86 178 116 184 150 184 S214 178 214 168 V118Z" fill="#F4B6C4"/>
+        <ellipse cx="150" cy="118" rx="64" ry="12" fill="#F9CDD7"/>
+        <path d="M86 118 C86 126 90 132 94 126 C98 138 104 138 108 128 C112 140 120 140 124 130 C128 142 136 142 140 132 C144 144 156 144 160 132 C164 142 172 142 176 130 C180 140 188 140 192 128 C196 138 202 138 206 126 C210 132 214 126 214 118 C190 130 110 130 86 118Z" fill="#FFFFFF"/>
+        <g fill="#FFF"><circle cx="100" cy="172" r="3.2"/><circle cx="116" cy="177" r="3.2"/><circle cx="133" cy="180" r="3.2"/><circle cx="150" cy="181" r="3.2"/><circle cx="167" cy="180" r="3.2"/><circle cx="184" cy="177" r="3.2"/><circle cx="200" cy="172" r="3.2"/></g>
+        <g fill="#8FB8E8"><use href="#tinyStar" x="104" y="154"/><use href="#tinyStar" x="196" y="150"/><use href="#tinyStar" x="150" y="164"/></g>
+        <!-- 数字蜡烛 2 5 -->
+        <g class="candle" data-i="0" id="candle-0">
+          <rect class="candle-hit" x="86" y="14" width="64" height="122"/>
+          <text x="124" y="122" text-anchor="middle" class="num" fill="url(#stripeP)" stroke="#E68DA2" stroke-width="1.4">2</text>
+          <path d="M124 70 V62" stroke="#3B2A22" stroke-width="1.6" stroke-linecap="round"/>
+          <g class="flame-g" transform="translate(124 62)">
+            <circle class="halo" r="26" fill="url(#haloG)"/>
+            <path class="flame" d="M0 -26 C7 -15 10 -6 6 -1 C3 3 -3 3 -6 -1 C-10 -6 -7 -15 0 -26Z" fill="url(#flameG)"/>
+          </g>
+          <g transform="translate(124 58)"><g class="smoke"><path d="M0 0 C-6 -10 6 -18 0 -28 C-6 -38 6 -46 0 -56" fill="none" stroke="#DDD" stroke-width="2.4" stroke-linecap="round"/></g></g>
+        </g>
+        <g class="candle" data-i="1" id="candle-1">
+          <rect class="candle-hit" x="150" y="14" width="64" height="122"/>
+          <text x="176" y="122" text-anchor="middle" class="num" fill="url(#stripeB)" stroke="#6E9BD6" stroke-width="1.4">5</text>
+          <path d="M176 70 V62" stroke="#3B2A22" stroke-width="1.6" stroke-linecap="round"/>
+          <g class="flame-g" transform="translate(176 62)">
+            <circle class="halo" r="26" fill="url(#haloG)"/>
+            <path class="flame" d="M0 -26 C7 -15 10 -6 6 -1 C3 3 -3 3 -6 -1 C-10 -6 -7 -15 0 -26Z" fill="url(#flameG)"/>
+          </g>
+          <g transform="translate(176 58)"><g class="smoke"><path d="M0 0 C-6 -10 6 -18 0 -28 C-6 -38 6 -46 0 -56" fill="none" stroke="#DDD" stroke-width="2.4" stroke-linecap="round"/></g></g>
+        </g>
+      </svg>
+      <div class="wind" id="wind" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+    <div class="cake-ui">
+      <p class="cake-msg" id="cake-msg"></p>
+      <button class="pill" id="wish-btn"><span class="fill"></span><span data-t="cake.wishHold"></span></button>
+      <div class="blow-actions" id="blow-actions" hidden>
+        <button class="pill primary" id="mic-btn" data-t="cake.mic"></button>
+        <p class="tap-note" data-t="cake.tapInstead"></p>
+      </div>
+    </div>
+    <canvas class="confetti" id="confetti"></canvas>
+    <div class="wish-dim" id="wish-dim" aria-hidden="true"></div>
+    <div class="wish-glow" id="wish-glow" aria-hidden="true"></div>
+  </div>
+
+  <!-- 窗（夜晚 & 早晨共用） -->
+  <div class="st" id="st-room">
+    <div class="wall" aria-hidden="true"></div>
+    <div class="wall-flash" id="wall-flash" aria-hidden="true"></div>
+    <p class="room-top" id="room-top"></p>
+    <div class="window-wrap">
+      <div class="rod" aria-hidden="true"></div>
+      <div class="window" id="window">
+        <div class="outside">
+          <div class="sky"></div>
+          <div class="sky-dawn"></div>
+          <svg class="moon27" viewBox="-30 -30 60 60" aria-hidden="true"><defs><mask id="m27"><circle r="20" fill="#fff"/><circle cx="9" cy="-2" r="19" fill="#000"/></mask><radialGradient id="mg"><stop offset=".6" stop-color="#FFF6DA"/><stop offset="1" stop-color="#F2DFA8"/></radialGradient></defs><circle r="20" fill="url(#mg)" mask="url(#m27)"/></svg>
+          <div class="sun" aria-hidden="true"></div>
+          <svg class="roofs" viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 50 L20 50 L20 34 L44 34 L44 46 L60 46 L60 22 L72 22 L72 46 L96 46 L96 30 L130 30 L130 52 L150 52 L150 38 L176 38 L176 26 L190 26 L190 44 L214 44 L214 32 L250 32 L250 48 L270 48 L270 36 L300 36 V80 H0Z"/>
+          </svg>
+          <svg class="hills" id="meadow" viewBox="0 0 300 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
+          <img class="lawn-pet lawn-pet-h" src="assets/img/h.png" alt="">
+          <img class="lawn-pet lawn-pet-u" src="assets/img/u.png" alt="">
+          <img class="lawn-pet lawn-pet-c" src="assets/img/c.png" alt="">
+          <canvas class="fw" id="fw"></canvas>
+          <div class="birds" id="birds" aria-hidden="true"></div>
+          <div class="flowerbox" aria-hidden="true" id="flowerbox"></div>
+          <!-- 气球横幅：在窗外升起 -->
+    <div class="balloons" id="balloons" hidden>
+      <svg viewBox="0 0 320 300" class="balloon-svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="bpink" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFE3EA"/><stop offset=".5" stop-color="#F2A7B8"/><stop offset="1" stop-color="#D97E95"/></radialGradient>
+          <radialGradient id="bblue" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#E7F2FF"/><stop offset=".5" stop-color="#8FB8E8"/><stop offset="1" stop-color="#5E8CC6"/></radialGradient>
+        </defs>
+        <path d="M60 112 C62 150 54 180 46 214" stroke="#7A6E86" stroke-width="1.4" fill="none"/>
+        <path d="M260 112 C258 150 266 180 274 214" stroke="#7A6E86" stroke-width="1.4" fill="none"/>
+        <g class="b b1"><ellipse cx="60" cy="62" rx="44" ry="52" fill="url(#bpink)"/><path d="M55 113 L60 106 L65 113Z" fill="#D97E95"/></g>
+        <g class="b b2"><ellipse cx="260" cy="62" rx="44" ry="52" fill="url(#bblue)"/><path d="M255 113 L260 106 L265 113Z" fill="#5E8CC6"/></g>
+      </svg>
+      <button class="banner" id="banner"><span data-t="morning.banner"></span></button>
+    </div>
+
+
+        </div>
+        <div class="panes">
+          <div class="pane left"><i class="glare"></i></div>
+          <div class="pane right"><i class="glare"></i></div>
+        </div>
+      </div>
+      <div class="sill" aria-hidden="true"></div>
+      <div class="curtain left" id="cur-l" aria-hidden="true"></div>
+      <div class="curtain right" id="cur-r" aria-hidden="true"></div>
+    </div>
+    <p class="room-hint" id="room-hint"></p>
+    <div class="dark" id="room-dark" aria-hidden="true"></div>
+    <div class="dawn" id="dawn" aria-hidden="true"></div>
+
+    <!-- 时钟 -->
+    <div class="clock" id="clock" hidden>
+      <svg viewBox="-100 -100 200 200" aria-hidden="true">
+        <circle r="92" class="face"/>
+        <g class="ticks" id="ticks"></g>
+        <line id="hand-h" class="hand h" x1="0" y1="8" x2="0" y2="-46"/>
+        <line id="hand-m" class="hand m" x1="0" y1="12" x2="0" y2="-70"/>
+        <circle r="4" class="pin"/>
+      </svg>
+      <p class="clock-time" id="clock-time">00:30</p>
+      <p class="clock-date"></p>
+      <button class="pill" id="dawn-btn" hidden data-t="clock.openCurtain"></button>
+    </div>
+
+    <!-- 信 -->
+    <div class="letter" id="letter" hidden>
+      <!-- 信封分三层，信纸夹在后层和前层之间 -->
+      <div class="env" id="env" aria-hidden="true">
+        <div class="env-part env-back"></div>
+        <div class="env-part env-flap">
+          <svg class="env-flap-in" viewBox="0 0 400 150" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="ev-flap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FADCE2"/><stop offset="1" stop-color="#F3BCC8"/></linearGradient>
+              <pattern id="ev-tex-f" width="52" height="52" patternUnits="userSpaceOnUse"><image href="assets/img/paper-texture.png" width="52" height="52"/></pattern>
+            </defs>
+            <path d="M8 0H392Q404 0 395 8L214 141Q200 151 186 141L5 8Q-4 0 8 0Z" fill="url(#ev-flap)" stroke="#fff" stroke-opacity=".55" stroke-width="1"/>
+            <path class="tex" d="M8 0H392Q404 0 395 8L214 141Q200 151 186 141L5 8Q-4 0 8 0Z" fill="url(#ev-tex-f)"/>
+            <path class="fl-in" d="M36 0H364L207 114Q200 119 193 114Z"/>
+          </svg>
+          <span class="env-seal"><svg viewBox="0 0 60 60">
+            <defs><radialGradient id="ev-wax" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#E6F1FD"/><stop offset=".5" stop-color="#B7D2F3"/><stop offset="1" stop-color="#8FB3E3"/></radialGradient></defs>
+            <path d="M57.0 35.4Q56.0 40.8 53.2 45.6Q50.5 50.5 45.3 52.5Q40.2 54.5 35.1 55.3Q30.0 56.1 24.5 56.2Q19.1 56.4 15.0 52.7Q10.9 49.1 8.0 44.7Q5.0 40.4 3.2 35.2Q1.5 30.0 3.5 24.9Q5.5 19.9 7.6 14.7Q9.6 9.6 14.6 7.1Q19.5 4.6 24.7 4.2Q30.0 3.9 35.5 3.6Q41.0 3.4 45.3 6.9Q49.6 10.4 51.9 15.2Q54.2 20.0 56.1 25.0Q58.0 30.0 57.0 35.4Z" fill="url(#ev-wax)"/>
+            <circle cx="30" cy="30" r="21.5" fill="#ABCAEF" stroke="#7FA5D8" stroke-opacity=".6"/>
+            <circle cx="30" cy="30" r="22.6" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width=".8"/>
+            <path transform="translate(13.9 13.65) scale(1.34)" d="M12 1L16.99 22.86L3.01 5.33L23.21 15.06L.79 15.06L20.99 5.33L7.01 22.86Z" fill="none" stroke-linejoin="miter" stroke-miterlimit="8" stroke="#7FA5D8" stroke-opacity=".7" stroke-width=".95"/>
+            <path transform="translate(13.9 13.25) scale(1.34)" d="M12 1L16.99 22.86L3.01 5.33L23.21 15.06L.79 15.06L20.99 5.33L7.01 22.86Z" fill="none" stroke-linejoin="miter" stroke-miterlimit="8" stroke="#fff" stroke-width=".95"/>
+          </svg></span>
+        </div>
+        <div class="env-part env-front">
+          <svg viewBox="0 0 400 264" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="ev-side" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBE0E5"/><stop offset="1" stop-color="#F6CDD6"/></linearGradient>
+              <linearGradient id="ev-bot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDEEF1"/><stop offset="1" stop-color="#F9DCE2"/></linearGradient>
+              <pattern id="ev-tex-p" width="52" height="52" patternUnits="userSpaceOnUse"><image href="assets/img/paper-texture.png" width="52" height="52"/></pattern>
+            </defs>
+            <path d="M0 0L208 140L0 264Z" fill="url(#ev-side)"/>
+            <path d="M400 0L192 140L400 264Z" fill="url(#ev-side)"/>
+            <path d="M0 264L186 132Q200 122 214 132L400 264Z" fill="#B9707F" fill-opacity=".2" transform="translate(0 -3)"/>
+            <path d="M0 264L186 132Q200 122 214 132L400 264Z" fill="url(#ev-bot)" stroke="#fff" stroke-opacity=".7" stroke-width="1"/>
+            <g class="tex" fill="url(#ev-tex-p)"><path d="M0 0L208 140L0 264Z"/><path d="M400 0L192 140L400 264Z"/><path d="M0 264L186 132Q200 122 214 132L400 264Z"/></g>
+          </svg>
+        </div>
+      </div>
+      <p class="env-hint" id="env-hint" data-t="letter.open"></p>
+      <div class="paper">
+        <img class="stamp" src="assets/img/u-letter.png" alt="">
+        <p class="to w" data-t="letter.to"></p>
+        <div class="lines" id="letter-lines"></div>
+        <p class="sign w" data-t="letter.sign"></p>
+        <p class="ldate w" data-t="letter.date"></p>
+      </div>
+      <button class="link" id="replay" data-t="letter.replay"></button>
+    </div>
+  </div>
+</section>
+
+<!-- 钢琴（全屏，竖屏时自动横过来） -->
+<div class="piano-panel" id="piano" hidden>
+  <div class="piano-stage" id="piano-stage">
+    <div class="piano-head" id="piano-drag">
+      <div class="head-row">
+        <span class="drag-tip" data-t="cake.pianoDrag"></span>
+        <button class="link close" id="piano-close" data-t="music.pianoClose"></button>
+      </div>
+      <div class="minimap" id="minimap"><div class="mm-keys" id="mm-keys"></div><div class="mm-win" id="mm-win"></div></div>
+    </div>
+    <div class="keys-view" id="keys-view"><div class="keys" id="keys"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="bloom" id="bloom" aria-hidden="true"></div>
+
+<script type="module" src="js/main.js?v=202611030422"></script>
+</body>
+</html>
