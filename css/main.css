@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611030508') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611030508') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611030519') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611030519') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -582,11 +582,20 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 .paper {
   --z: 1; /* 大屏上的放大倍数，由 stage.js 设置 */
   position: relative; z-index: 2; visibility: hidden;
-  width: 100%; max-width: calc(380px * var(--z)); padding: calc(34px * var(--z)) calc(28px * var(--z)) calc(28px * var(--z)); border-radius: 6px;
-  background: var(--paper); color: var(--ink-text);
-  background-image: repeating-linear-gradient(180deg, transparent 0 calc(33px * var(--z)), rgba(91,143,224,.14) calc(33px * var(--z)) calc(34px * var(--z)));
-  background-position: 0 calc(66px * var(--z));
-  box-shadow: 0 30px 60px rgba(46,58,99,.25);
+  width: 100%; max-width: calc(380px * var(--z)); padding: calc(34px * var(--z)) calc(28px * var(--z)) calc(28px * var(--z)); border-radius: 3px;
+  color: var(--ink-text);
+  /* 像真的信纸：微微泛黄的纸色、纤维、左上方来的光、印刷的横线；从信封里拿出来，有两道折痕 */
+  background-color: #FBF8F1;
+  background-image:
+    linear-gradient(180deg, transparent calc(33.4% - 12px), rgba(90,70,40,.05) calc(33.4% - 1px), rgba(255,255,255,.85) 33.4%, rgba(90,70,40,.035) calc(33.4% + 3px), transparent calc(33.4% + 14px), transparent calc(66.7% - 12px), rgba(90,70,40,.05) calc(66.7% - 1px), rgba(255,255,255,.85) 66.7%, rgba(90,70,40,.035) calc(66.7% + 3px), transparent calc(66.7% + 14px)),
+    radial-gradient(130% 90% at 15% 0%, rgba(255,255,255,.6), rgba(255,255,255,0) 55%),
+    linear-gradient(165deg, rgba(255,255,255,0) 45%, rgba(110,90,60,.08)),
+    repeating-linear-gradient(180deg, transparent 0 calc(33px * var(--z)), rgba(120,150,190,.3) calc(33px * var(--z)) calc(34px * var(--z))),
+    url(../assets/img/letter-paper.png);
+  background-position: 0 0, 0 0, 0 0, 0 calc(66px * var(--z)), 0 0;
+  background-size: auto, auto, auto, auto, 256px 256px;
+  background-blend-mode: normal, normal, normal, normal, multiply;
+  box-shadow: 0 1px 2px rgba(80,60,40,.1), 0 30px 60px rgba(46,58,99,.25), inset 0 0 0 1px rgba(255,255,255,.55), inset 0 0 28px rgba(120,100,70,.07);
   transform-origin: 50% 0;
 }
 .letter.opened .paper { visibility: visible; }
@@ -605,11 +614,13 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 }
 .paper .w.in { -webkit-mask-position: 0 0; mask-position: 0 0; }
 /* 手写字：打印字设成透明，只占位；每个字上叠一格手写字，比字稍大一点 */
-.paper.hand .w { color: transparent; letter-spacing: .1em; }
-.paper.hand .ldate { font-size: calc(16px * var(--z)); opacity: .7; }
+/* 手写稿里每行的字一样大，称呼、正文、署名、日期用同一个字号 */
+.paper.hand .w { color: transparent; letter-spacing: .1em; font-size: calc(18px * var(--z)); }
+.paper.hand .ldate { opacity: 1; }
 .hc { position: relative; }
-.hc::after { content: ''; position: absolute; left: 50%; top: 50%; width: 1.1em; height: 1.1em; transform: translate(-50%, -50%); background: var(--hand) no-repeat; background-size: calc(var(--cols) * 1.1em) calc(var(--rows) * 1.1em); background-position: calc(var(--c) * -1.1em) calc(var(--r) * -1.1em); }
-.hc2::after { left: 0; width: 2.2em; transform: translateY(-50%); }
+.hc::after { content: ''; position: absolute; left: 50%; top: 50%; width: calc(var(--cell) * 1em); height: calc(var(--cell) * 1em); transform: translate(-50%, -50%); background: var(--hand) no-repeat; background-size: calc(var(--cols) * var(--cell) * 1em) calc(var(--rows) * var(--cell) * 1em); background-position: calc(var(--c) * var(--cell) * -1em) calc(var(--r) * var(--cell) * -1em); }
+/* 破折号两个“—”加字距一共约 2.2em，手写的一笔居中放在这段上 */
+.hc2::after { left: calc(1.1em - var(--cell) * 1em); width: calc(var(--cell) * 2em); transform: translateY(-50%); }
 .letter .link { position: relative; z-index: 2; color: var(--ink-text); margin-top: 18px; opacity: 0; pointer-events: none; transition: opacity 1s; }
 .letter .link.in { opacity: 1; pointer-events: auto; }
 

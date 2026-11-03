@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611030508';
-import { audio } from './audio.js?v=202611030508';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611030508';
-import { listenForBlow } from './blow.js?v=202611030508';
-import { HAND } from './hand.js?v=202611030508';
+import { CONTENT } from './content.js?v=202611030519';
+import { audio } from './audio.js?v=202611030519';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611030519';
+import { listenForBlow } from './blow.js?v=202611030519';
+import { HAND } from './hand.js?v=202611030519';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -25,6 +25,7 @@ function handwrite(L, rows) {
   paper.style.setProperty('--hand', `url("${new URL(HAND.src, location.href).href}")`);
   paper.style.setProperty('--cols', HAND.cols);
   paper.style.setProperty('--rows', HAND.rows);
+  paper.style.setProperty('--cell', HAND.cell);
   rows.forEach(([el, toks]) => {
     if (typeof el === 'string') el = $(el, L);
     if (!el || !toks || el.dataset.hand) return;
@@ -767,7 +768,7 @@ export class Stage {
       { ...pose(0), easing: 'cubic-bezier(.3,.1,.25,1)' },
       { ...pose(up), offset: 0.62 },
       { ...pose(up), offset: 0.7, easing: 'cubic-bezier(.4,0,.2,1)' },
-      { transform: 'none', clipPath: 'inset(-80px -80px 0px -80px)', boxShadow: '0 30px 60px rgba(46,58,99,.25)' },
+      { transform: 'none', clipPath: 'inset(-80px -80px 0px -80px)', boxShadow: getComputedStyle(paper).boxShadow },
     ], { duration: 3800, delay: 950, fill: 'backwards' });
     L.classList.add('opened');
     env.classList.add('opening');
