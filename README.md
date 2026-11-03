@@ -16,6 +16,7 @@
 - 《这条小鱼在乎》的词曲和录音版权归九月及相关权利人所有。
 - 云上那一段的《致青春》是寿星本人的翻唱录音，原曲版权归原作者所有。
 - 《永劫无间》只用作视觉氛围参考，没有使用游戏素材。
+- 贺卡上的手写字（`assets/img/hand.png`）由 lllhuang 亲笔书写，版权归 lllhuang 所有。
 - 字体：悠哉字体（Yozai，by LXGW）、马善政楷书（Ma Shan Zheng），均采用 SIL Open Font License 1.1，许可证在 `assets/fonts/`。
 - 钢琴音色：Salamander Grand Piano V3，作者 Alexander Holm，CC-BY 3.0（经 Tone.js 的音频库取得）。
 - 信封的纸张纹理来自 [eLuvLetter](https://github.com/Genius-Society/eLuvLetter)（Apache License 2.0），转成灰度并提亮，许可证在 `assets/img/paper-texture.LICENSE.txt`。
