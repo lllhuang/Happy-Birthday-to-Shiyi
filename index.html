@@ -8,9 +8,9 @@
 <meta name="description" content="给冯诗意的生日梦境" />
 <meta property="og:title" content="祝冯诗意小朋友生日快乐！" />
 <meta property="og:description" content="今晚你会做一个很长的梦。" />
-<link rel="preload" href="assets/fonts/yozai.woff?v=202611031414" as="font" type="font/woff" crossorigin />
+<link rel="preload" href="assets/fonts/yozai.woff?v=202611031437" as="font" type="font/woff" crossorigin />
 <link rel="preload" href="assets/img/paper-texture.png" as="image" />
-<link rel="stylesheet" href="css/main.css?v=202611031414" />
+<link rel="stylesheet" href="css/main.css?v=202611031437" />
 </head>
 <body class="no-scroll">
 
@@ -218,11 +218,7 @@
     <p class="gilt" data-t="ink.sub"></p>
   </div>
   <div class="ld-bottom">
-    <svg class="ld-bar" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true">
-      <defs><linearGradient id="barg" x1="0" x2="1"><stop offset="0" stop-color="#E3243B"/><stop offset=".7" stop-color="#FF8A6A"/><stop offset="1" stop-color="#FFD58A"/></linearGradient></defs>
-      <path d="M4 13 C60 9 120 15 180 11 S260 14 296 12" class="bar-bg"/>
-      <path id="bar" d="M4 13 C60 9 120 15 180 11 S260 14 296 12" class="bar-fg" pathLength="100"/>
-    </svg>
+    <div class="ld-bar" aria-hidden="true"><canvas class="brush-track" id="bar-track"></canvas><canvas class="brush-ink" id="bar"></canvas></div>
     <div class="ld-meta"><span id="ld-tip"></span><span id="ld-pct">0%</span></div>
     <p class="ld-tap" id="ld-tap" data-t="ink.tap"></p>
   </div>
@@ -431,6 +427,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="bloom" id="bloom" aria-hidden="true"></div>
 
-<script type="module" src="js/main.js?v=202611031414"></script>
+<script type="module" src="js/main.js?v=202611031437"></script>
 </body>
 </html>

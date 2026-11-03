@@ -1,9 +1,10 @@
-import { CONTENT } from './content.js?v=202611031414';
-import { audio } from './audio.js?v=202611031414';
-import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611031414';
-import { Stage } from './stage.js?v=202611031414';
-import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611031414';
-import { playTransition } from './transition.js?v=202611031414';
+import { CONTENT } from './content.js?v=202611031437';
+import { audio } from './audio.js?v=202611031437';
+import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611031437';
+import { Stage } from './stage.js?v=202611031437';
+import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611031437';
+import { playTransition } from './transition.js?v=202611031437';
+import { paintBrush } from './brush.js?v=202611031437';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -967,11 +968,14 @@ async function startLoading({ instant = false, after } = {}) {
   audio.thud(0.5);
   audio.whoosh(1.6, false);
   const bar = $('#bar');
+  const paint = () => paintBrush(bar, $('#bar-track'));
+  paint();
+  addEventListener('resize', paint);
   const pct = $('#ld-pct');
   const tip = $('#ld-tip');
   const tips = CONTENT.ink.tips;
   const DUR = instant ? 300 : tips.length * 2000; // 每条提示停 2 秒
-  bar.style.strokeDashoffset = 100;
+  bar.style.setProperty('--x', '0px');
   pct.textContent = '0%';
   tip.textContent = tips[0];
   if (after) await after;
@@ -982,7 +986,7 @@ async function startLoading({ instant = false, after } = {}) {
       const k = clamp((t - t0) / DUR);
       // 像真的加载一样，中间会顿一下
       const shown = k < 0.55 ? ease(k / 0.55) * 0.62 : k < 0.7 ? 0.62 + (k - 0.55) * 0.2 : 0.65 + ease((k - 0.7) / 0.3) * 0.35;
-      bar.style.strokeDashoffset = 100 - shown * 100;
+      bar.style.setProperty('--x', `${shown * (bar.clientWidth + 18)}px`);
       pct.textContent = Math.round(shown * 100) + '%';
       const ti = Math.min(tips.length - 1, Math.floor(k * tips.length));
       if (ti !== lastTip) {
@@ -1012,6 +1016,7 @@ async function startLoading({ instant = false, after } = {}) {
   await ld.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1100, easing: 'ease-out', fill: 'forwards' }).finished;
   ld.hidden = true;
   ldEmbers.stopNow();
+  removeEventListener('resize', paint);
 }
 
 // ---------- 锁与启动 ----------

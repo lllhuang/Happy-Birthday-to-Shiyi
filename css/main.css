@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611031414') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611031414') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611031437') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611031437') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -383,9 +383,10 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 }
 @keyframes gilt { from { background-position: 0 0; } to { background-position: 0 300%; } }
 .ld-bottom { position: absolute; left: 8vw; right: 8vw; bottom: calc(2.5vh + var(--safe-bot)); z-index: 2; }
-.ld-bar { width: 100%; height: 22px; overflow: visible; }
-.bar-bg { fill: none; stroke: rgba(255,255,255,.1); stroke-width: 4; stroke-linecap: round; }
-.bar-fg { fill: none; stroke: url(#barg); stroke-width: 4.5; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; filter: drop-shadow(0 0 6px rgba(255,138,106,.9)); }
+/* 进度条是一笔毛笔横画（js/brush.js 现画）；--x 是笔锋走到的位置，前面留一小段渐隐当作笔尖 */
+.ld-bar { position: relative; width: 100%; height: 22px; }
+.ld-bar canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.brush-ink { --x: 0px; -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--x) - 18px), transparent var(--x)); mask-image: linear-gradient(90deg, #000 calc(var(--x) - 18px), transparent var(--x)); filter: drop-shadow(0 0 5px rgba(255,96,80,.5)); }
 #ld-tip { transition: opacity .5s; }
 .ld-meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font-size: 14px; color: rgba(245,239,230,.7); }
 #ld-pct { font-variant-numeric: tabular-nums; }
