@@ -1,7 +1,7 @@
-import { CONTENT } from './content.js?v=202611030422';
-import { audio } from './audio.js?v=202611030422';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611030422';
-import { listenForBlow } from './blow.js?v=202611030422';
+import { CONTENT } from './content.js?v=202611030439';
+import { audio } from './audio.js?v=202611030439';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611030439';
+import { listenForBlow } from './blow.js?v=202611030439';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
