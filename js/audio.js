@@ -398,8 +398,9 @@ class Engine {
     bp.type = 'bandpass';
     bp.Q.value = special ? 9 : 6;
     const f0 = (special ? 1500 : 1100) + Math.random() * 300;
-    bp.frequency.setValueAtTime(f0, t0);
-    bp.frequency.exponentialRampToValueAtTime(f0 * 2.2, t0 + T);
+    // 升空时音调由高往低（原来是由低往高：f0 → f0 * 2.2，振荡器 f0 * 1.4 → f0 * 2.5，回退就把两组起止对调回去）
+    bp.frequency.setValueAtTime(f0 * 2.2, t0);
+    bp.frequency.exponentialRampToValueAtTime(f0, t0 + T);
     // 火药喷气不稳定，频率一直在抖
     const lfo = ctx.createOscillator();
     lfo.frequency.value = 9 + Math.random() * 8;
@@ -413,8 +414,8 @@ class Engine {
     n.connect(bp).connect(ng).connect(out);
     const o = ctx.createOscillator();
     o.type = 'triangle';
-    o.frequency.setValueAtTime(f0 * 1.4, t0);
-    o.frequency.exponentialRampToValueAtTime(f0 * 2.5, t0 + T);
+    o.frequency.setValueAtTime(f0 * 2.5, t0);
+    o.frequency.exponentialRampToValueAtTime(f0 * 1.4, t0 + T);
     const og = ctx.createGain();
     og.gain.setValueAtTime(0.0001, t0);
     og.gain.linearRampToValueAtTime(special ? 0.04 : 0.024, t0 + 0.08);
