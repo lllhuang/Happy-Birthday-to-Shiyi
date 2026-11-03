@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611031247';
-import { audio } from './audio.js?v=202611031247';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611031247';
-import { listenForBlow } from './blow.js?v=202611031247';
-import { HAND } from './hand.js?v=202611031247';
+import { CONTENT } from './content.js?v=202611031323';
+import { audio } from './audio.js?v=202611031323';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611031323';
+import { listenForBlow } from './blow.js?v=202611031323';
+import { HAND } from './hand.js?v=202611031323';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -281,15 +281,40 @@ export class Stage {
     });
   }
 
-  _hint(t) {
+  _hint(t, { belowSill = false } = {}) {
     const h = this.hint;
     h.classList.remove('show');
     clearTimeout(this._hintT);
     if (!t) return;
     this._hintT = setTimeout(() => {
       h.textContent = t;
+      this._placeHint(belowSill);
       h.classList.add('show');
     }, 250);
+  }
+
+  // 把提示放在窗台和屏幕底边中间，免得压在白色窗框上。窗户按 vh 排，
+  // 手机浏览器的 vh 比看得见的屏幕高，窗台会比样式表预想的更靠下。
+  // 用镜头停下以后的位置算；窗户占满整屏、下面没有空位时，照样式表放在窗户里
+  _placeHint(belowSill) {
+    const h = this.hint, wrap = this.wrap, win = this.win;
+    const sill = wrap.querySelector('.sill');
+    h.style.top = '';
+    h.style.bottom = '';
+    if (!belowSill || !sill || sill.offsetParent !== wrap || h.offsetParent !== wrap.offsetParent) return;
+    const H = h.offsetParent.clientHeight;
+    const z = this._z || 1;
+    const sb = sill.offsetTop + sill.offsetHeight;
+    const oy = win.offsetTop + win.offsetHeight / 2;
+    const bottom = z === 1 ? wrap.offsetTop + sb : innerHeight / 2 + (sb - oy) * z;
+    const th = h.offsetHeight;
+    const keep = parseFloat(getComputedStyle(h).bottom) || 0;
+    const free = H - bottom;
+    if (free < th + 24) return;
+    // 只往下挪，不比样式表的位置高
+    const top = Math.max(H - keep - th, Math.min(bottom + (free - th) / 2, H - keep / 2 - th));
+    h.style.top = `${Math.max(bottom + 12, top)}px`;
+    h.style.bottom = 'auto';
   }
 
   // 看烟花时镜头推近：窗户完整露出来、尽可能大。竖屏时窗宽占满屏幕宽，横屏时窗高占满屏幕高。
@@ -429,7 +454,7 @@ export class Stage {
         this.state = 'mine-done';
         await sleep(2600);
         this.state = 'sleep-ask';
-        this._hint(C.night.sleep);
+        this._hint(C.night.sleep, { belowSill: true });
       }
       return;
     }
@@ -450,7 +475,7 @@ export class Stage {
     this._zoom(false);
     await sleep(CURTAIN_LEAD);
     this.state = 'curtain';
-    this._hint(C.night.curtain);
+    this._hint(C.night.curtain, { belowSill: true });
   }
 
   // 情况二：30 秒内放满 5 朵 → 提示“该睡觉了”，她点了以后放最后一波，然后自动拉窗帘

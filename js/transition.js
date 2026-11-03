@@ -5,7 +5,7 @@
 // 都是先从琴房变全黑，加载页在黑幕底下开始走进度，再用各自的方式把黑幕去掉。
 // 烧纸和晕染用一张低分辨率的“到达时间”图：每格记下几时被烧到或染到，逐帧和当前进度比较，
 // 算出透明度和火光/墨色两张小图，放大后叠在满分辨率的纸纹上。每帧只算几万个格子，边缘放大后自然柔和
-import { drawHead } from './lily.js?v=202611031247';
+import { drawHead } from './lily.js?v=202611031323';
 
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const rnd = (a, b) => a + Math.random() * (b - a);
