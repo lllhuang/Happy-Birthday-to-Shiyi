@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611030439') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611030439') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611030508') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611030508') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -604,6 +604,12 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
   transition: -webkit-mask-position var(--dur, 1s) linear, mask-position var(--dur, 1s) linear;
 }
 .paper .w.in { -webkit-mask-position: 0 0; mask-position: 0 0; }
+/* 手写字：打印字设成透明，只占位；每个字上叠一格手写字，比字稍大一点 */
+.paper.hand .w { color: transparent; letter-spacing: .1em; }
+.paper.hand .ldate { font-size: calc(16px * var(--z)); opacity: .7; }
+.hc { position: relative; }
+.hc::after { content: ''; position: absolute; left: 50%; top: 50%; width: 1.1em; height: 1.1em; transform: translate(-50%, -50%); background: var(--hand) no-repeat; background-size: calc(var(--cols) * 1.1em) calc(var(--rows) * 1.1em); background-position: calc(var(--c) * -1.1em) calc(var(--r) * -1.1em); }
+.hc2::after { left: 0; width: 2.2em; transform: translateY(-50%); }
 .letter .link { position: relative; z-index: 2; color: var(--ink-text); margin-top: 18px; opacity: 0; pointer-events: none; transition: opacity 1s; }
 .letter .link.in { opacity: 1; pointer-events: auto; }
 

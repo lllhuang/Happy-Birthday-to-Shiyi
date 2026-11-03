@@ -1,7 +1,8 @@
-import { CONTENT } from './content.js?v=202611030439';
-import { audio } from './audio.js?v=202611030439';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611030439';
-import { listenForBlow } from './blow.js?v=202611030439';
+import { CONTENT } from './content.js?v=202611030508';
+import { audio } from './audio.js?v=202611030508';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611030508';
+import { listenForBlow } from './blow.js?v=202611030508';
+import { HAND } from './hand.js?v=202611030508';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -14,6 +15,39 @@ const WORDS = [['冯诗意', ['#FFD58A', '#FFF4D6']], ['生日快乐！', ['#8FD
 const WORD_GAP = 3.4;
 const ZOOM_OUT = 4200; // 镜头拉远用多久（毫秒）
 const CURTAIN_LEAD = 2200; // 拉远进行到这时开始关窗拉窗帘，两者重叠
+
+// 贺卡换成手写字：打印字照常排版、设成透明，只用来占位；每个字上叠一格手写字（拼在一张图里）。
+// 破折号“——”是两个字符，手写稿里是一笔，叠在第一个上、占两格
+function handwrite(L, rows) {
+  const paper = $('.paper', L);
+  paper.classList.add('hand');
+  // 写成完整地址：样式表里用 var() 时，相对地址会按 css/ 目录去找
+  paper.style.setProperty('--hand', `url("${new URL(HAND.src, location.href).href}")`);
+  paper.style.setProperty('--cols', HAND.cols);
+  paper.style.setProperty('--rows', HAND.rows);
+  rows.forEach(([el, toks]) => {
+    if (typeof el === 'string') el = $(el, L);
+    if (!el || !toks || el.dataset.hand) return;
+    el.dataset.hand = 1;
+    const text = Array.from(el.textContent);
+    el.textContent = '';
+    let k = 0, dash = false;
+    text.forEach((ch) => {
+      const s = document.createElement('span');
+      s.textContent = ch;
+      const t = toks[k];
+      if (t && t[0] === '——' && ch === '—') {
+        if (!dash) { s.className = 'hc hc2'; s.style.cssText = `--c:${t[1]};--r:${t[2]}`; dash = true; } else { k++; dash = false; }
+      } else if (t && t[0] === ch) {
+        s.className = 'hc';
+        s.style.cssText = `--c:${t[1]};--r:${t[2]}`;
+        k++;
+      }
+      el.appendChild(s);
+    });
+    if (k !== toks.length) console.warn('手写字没对上', el.dataset.t || '', k, toks.length);
+  });
+}
 
 export class Stage {
   constructor({ toast, onChapter }) {
@@ -696,6 +730,7 @@ export class Stage {
       p.textContent = t;
       lines.appendChild(p);
     });
+    handwrite(L, [['.paper .to', HAND.lines.to], ...[...lines.children].map((p, i) => [p, HAND.lines['line' + (i + 1)]]), ['.paper .sign', HAND.lines.sign], ['.paper .ldate', HAND.lines.date]]);
     L.hidden = false;
     clearInterval(this._birds); // 歌响起来以后，鸟叫就不抢了
     audio.playEnding(C.ending.file).catch(() => {});
