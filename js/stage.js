@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611031437';
-import { audio } from './audio.js?v=202611031437';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611031437';
-import { listenForBlow } from './blow.js?v=202611031437';
-import { HAND } from './hand.js?v=202611031437';
+import { CONTENT } from './content.js?v=202611031447';
+import { audio } from './audio.js?v=202611031447';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611031447';
+import { listenForBlow } from './blow.js?v=202611031447';
+import { HAND } from './hand.js?v=202611031447';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
