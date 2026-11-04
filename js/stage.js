@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611031932';
-import { audio } from './audio.js?v=202611031932';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611031932';
-import { listenForBlow } from './blow.js?v=202611031932';
-import { HAND } from './hand.js?v=202611031932';
+import { CONTENT } from './content.js?v=202611040043';
+import { audio } from './audio.js?v=202611040043';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611040043';
+import { listenForBlow } from './blow.js?v=202611040043';
+import { HAND } from './hand.js?v=202611040043';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -593,16 +593,15 @@ export class Stage {
     await sleep(3200);
     this._lightButtons(true);
     audio.chirp();
-    // “龙复苏”在窗户下面闪两下就消失，接着出现“推开窗看看吧”，两句在同一个位置。
-    // 节奏和原来闪一下的那版一样：每 900 毫秒换一次亮暗，样式表里淡入淡出 0.6 秒
+    // “龙复苏”在窗户下面闪几下就消失，接着出现“推开窗看看吧”，两句在同一个位置。
+    // 闪的时候不完全消失：深、浅、深、浅、深、浅，最后才淡没。
+    // 节奏和原来一样：每 900 毫秒换一次深浅，样式表里过渡 0.6 秒
     // 先藏起来再填字，免得字一出来就整个亮一下再淡掉
     this.top.style.opacity = 0;
     await sleep(900);
     this.top.textContent = C.morning.title;
-    for (let i = 0; i < 2; i++) {
-      this.top.style.opacity = 1;
-      await sleep(900);
-      this.top.style.opacity = 0;
+    for (const o of [1, 0.35, 1, 0.35, 1, 0.35, 0]) {
+      this.top.style.opacity = o;
       await sleep(900);
     }
     this.state = 'm-closed';

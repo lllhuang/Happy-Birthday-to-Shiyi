@@ -135,7 +135,7 @@ class Engine {
   }
 
   // 钢琴：带一点非谐波的加法合成
-  piano(midi, vel = 0.8) {
+  piano(midi, vel = 0.8, vol = 1) {
     if (!this.ctx) return;
     const ctx = this.ctx;
     const t0 = this.now;
@@ -143,7 +143,7 @@ class Engine {
     const B = 0.00035;
     const lowness = Math.max(0, (72 - midi) / 24);
     const out = ctx.createGain();
-    out.gain.value = 0.22 * vel;
+    out.gain.value = 0.22 * vel * vol;
     const lp = ctx.createBiquadFilter();
     lp.type = 'lowpass';
     lp.frequency.setValueAtTime(5200 + vel * 2500, t0);
@@ -265,10 +265,11 @@ class Engine {
   }
 
   // 弹一个音，返回可以松开的句柄
-  key(midi, { vel = 0.8, t = 0, dur = 0, wet = 0.22 } = {}) {
+  // vol：整体音量倍数，琴房里自己弹的钢琴用得大一点
+  key(midi, { vel = 0.8, t = 0, dur = 0, wet = 0.22, vol = 1 } = {}) {
     if (!this.ctx) return null;
     if (!this.pianoReady) {
-      this.piano(midi, vel);
+      this.piano(midi, vel, vol);
       return null;
     }
     const ctx = this.ctx;
@@ -282,7 +283,7 @@ class Engine {
     src.buffer = this.samples.get(best);
     src.playbackRate.value = Math.pow(2, (midi - best) / 12);
     const g = ctx.createGain();
-    const v = Math.pow(vel, 1.4) * 0.95;
+    const v = Math.pow(vel, 1.4) * 0.95 * vol;
     g.gain.setValueAtTime(v, t0);
     const lp = ctx.createBiquadFilter();
     lp.type = 'lowpass';

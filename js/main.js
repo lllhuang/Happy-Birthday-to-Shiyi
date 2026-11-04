@@ -1,10 +1,10 @@
-import { CONTENT } from './content.js?v=202611031932';
-import { audio } from './audio.js?v=202611031932';
-import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611031932';
-import { Stage } from './stage.js?v=202611031932';
-import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611031932';
-import { playTransition } from './transition.js?v=202611031932';
-import { paintBrush } from './brush.js?v=202611031932';
+import { CONTENT } from './content.js?v=202611040043';
+import { audio } from './audio.js?v=202611040043';
+import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040043';
+import { Stage } from './stage.js?v=202611040043';
+import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040043';
+import { playTransition } from './transition.js?v=202611040043';
+import { paintBrush } from './brush.js?v=202611040043';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -75,7 +75,8 @@ let starOpacity = 1;
 let starsOn = true; // 梦境结束以后星空被盖住了，不用再画
 function drawStars(t) {
   if (!starsOn) return;
-  if (starOpacity > 0.01) {
+  // 钢琴面板打开时整屏都被盖住，星空不用画，省下来给拖琴键
+  if (starOpacity > 0.01 && !document.body.classList.contains('piano-open')) {
     starCtx.clearRect(0, 0, innerWidth, innerHeight);
     for (const s of stars) {
       const a = 0.45 + 0.55 * Math.sin(t / 1000 * s.s + s.o);
@@ -185,12 +186,19 @@ sea.innerHTML = seaSVG('sea-day', ['#EAF2FB', '#F6E4EE'], ['#FFFFFF', '#F8E6EF']
 cloudsEl.appendChild(sea);
 const seaDusk = $('.sea-dusk', sea);
 
-// 点云、礼盒、照片：一下一个音，按顺序弹出 CONTENT.cloud.tune，弹完就安静
+// 点云、礼盒、照片：一下一个音，按顺序弹出 CONTENT.cloud.tune，弹完就安静。
+// 每响一个音，从点的地方飘起一个音符，音越高飘得越高。
+// 颜色是赤橙黄绿青蓝紫，按唱名对应：do 赤、re 橙、mi 黄、fa 绿、sol 青、la 蓝、si 紫（C 大调，升降音算下面那个音）。
+// 天空是浅粉浅蓝，颜色取得偏深，再描一圈白光，才看得清
+const TUNE_COLORS = ['#E8414A', '#F28C28', '#E0AE14', '#3DB35A', '#1FAFB0', '#3F7FE0', '#9A5FE0'];
+const DEGREE = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6]; // 音名（C=0）到唱名的序号
 let tuneIdx = 0;
-function nextTuneNote() {
+function nextTuneNote(x, y) {
   const tune = CONTENT.cloud.tune || [];
   if (tuneIdx >= tune.length) return;
-  audio.bell(tune[tuneIdx++], { vol: 0.16, dur: 1.8 });
+  const m = tune[tuneIdx++];
+  audio.bell(m, { vol: 0.16, dur: 1.8 });
+  if (x != null) floatNote(x, y, { color: TUNE_COLORS[DEGREE[m % 12]], rise: 110 + Math.max(0, m - 60) * 4, cls: 'on-sky' });
 }
 
 const GIFT_COLORS = [['#F2A7B8', '#FFFFFF'], ['#8FB8E8', '#FFD58A'], ['#C9B8FF', '#FFFFFF']];
@@ -209,10 +217,10 @@ const giftEls = GIFTS.map((g, i) => {
   el.innerHTML = `<div class="bob" style="animation-delay:${-i * 1.3}s"><svg viewBox="0 0 60 60"><rect x="8" y="24" width="44" height="32" rx="4" fill="${box}"/><rect x="27" y="24" width="6" height="32" fill="${rib}"/><g class="lid"><rect x="4" y="15" width="52" height="11" rx="3" fill="${box}"/><rect x="27" y="15" width="6" height="11" fill="${rib}"/><path d="M30 15 C22 4 12 8 18 14 C22 17 28 15 30 15 C32 15 38 17 42 14 C48 8 38 4 30 15Z" fill="${rib}" stroke="${box}" stroke-width="1.5"/></g></svg><span class="note">${CONTENT.cloud.gifts[i]}</span></div>`;
   el.addEventListener('click', (e) => {
     e.stopPropagation();
-    nextTuneNote();
+    const r = el.getBoundingClientRect();
+    nextTuneNote(r.left + r.width / 2, r.top + r.height * 0.3);
     if (el.classList.contains('open')) return;
     el.classList.add('open');
-    const r = el.getBoundingClientRect();
     sparkle(r.left + r.width / 2, r.top + 10, { color: box, count: 10 });
   });
   giftsEl.appendChild(el);
@@ -227,7 +235,7 @@ $('#s-cloud .sticky').addEventListener('click', (e) => {
     void pol.offsetWidth;
     pol.classList.add('wiggle');
     sparkle(e.clientX, e.clientY, { color: '#F2A7B8', count: 8 });
-    nextTuneNote();
+    nextTuneNote(e.clientX, e.clientY);
     return;
   }
   if (cloud) {
@@ -236,7 +244,7 @@ $('#s-cloud .sticky').addEventListener('click', (e) => {
     cloud.classList.add('squish');
   }
   sparkle(e.clientX, e.clientY, { color: cloud ? '#FFFFFF' : '#FFE8B8', count: cloud ? 9 : 6 });
-  if (cloud) nextTuneNote();
+  if (cloud) nextTuneNote(e.clientX, e.clientY);
 });
 
 const beats = $$('.beat');
@@ -455,7 +463,8 @@ function setOffset(x) {
     kbBase = Math.min(c, HIGH - 17);
     const inv = {};
     Object.entries(KB).forEach(([k, off]) => (inv[kbBase + off] = k === ';' || k === "'" ? k : k.toUpperCase()));
-    keysEl.querySelectorAll('.key').forEach((k) => (k.querySelector('.kb').textContent = inv[k.dataset.m] || ''));
+    // 键上的字母只有电脑上显示；平板、手机上不用每拖过一个 C 就改一遍整排琴键
+    if (finePointer) keysEl.querySelectorAll('.key').forEach((k) => (k.querySelector('.kb').textContent = inv[k.dataset.m] || ''));
   }
 }
 
@@ -474,17 +483,25 @@ dragBar.addEventListener('pointerdown', (e) => {
     const frac = rotated ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width;
     setOffset(frac * whites.length * keyW - viewW / 2);
   }
-  drag = { id: e.pointerId, start: along(e), off: offset, map: !!onMap };
+  const mapLen = onMap ? $('#minimap').getBoundingClientRect()[rotated ? 'height' : 'width'] : 0;
+  drag = { id: e.pointerId, start: along(e), off: offset, map: !!onMap, mapLen, to: null, raf: 0 };
   dragBar.classList.add('dragging');
+  keysEl.classList.add('moving');
 });
+// 手指移动时只记下位置，每帧最多挪一次琴键（平板的触摸一帧能报好几次）
 dragBar.addEventListener('pointermove', (e) => {
   if (!drag || drag.id !== e.pointerId) return;
   const d = along(e) - drag.start;
-  const total = whites.length * keyW;
-  const scale = drag.map ? total / $('#minimap').getBoundingClientRect()[rotated ? 'height' : 'width'] : -1.6;
-  setOffset(drag.off + d * scale);
+  const scale = drag.map ? (whites.length * keyW) / drag.mapLen : -1.6;
+  drag.to = drag.off + d * scale;
+  if (!drag.raf) drag.raf = requestAnimationFrame(() => { if (!drag) return; drag.raf = 0; setOffset(drag.to); });
 });
-const endDrag = () => { drag = null; dragBar.classList.remove('dragging'); };
+const endDrag = () => {
+  if (drag) { cancelAnimationFrame(drag.raf); if (drag.to !== null) setOffset(drag.to); }
+  drag = null;
+  dragBar.classList.remove('dragging');
+  keysEl.classList.remove('moving');
+};
 dragBar.addEventListener('pointerup', endDrag);
 dragBar.addEventListener('pointercancel', endDrag);
 keysView.addEventListener('wheel', (e) => { e.preventDefault(); setOffset(offset + (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY)); }, { passive: false });
@@ -515,7 +532,7 @@ const held = new Map(); // pointerId / 键盘按键 -> { key, h }
 function press(id, key) {
   if (!key) return;
   key.classList.add('down');
-  const h = audio.key(+key.dataset.m, { vel: 0.8 });
+  const h = audio.key(+key.dataset.m, { vel: 0.8, vol: 1.35 }); // 音量比原来大约高 2.6 分贝
   held.set(id, { key, h });
   localNote(key);
 }

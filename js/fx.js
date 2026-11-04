@@ -27,9 +27,9 @@ export function sparkle(x, y, { color = '#fff', count = 7, spread = 70, layer = 
   }
 }
 
-export function floatNote(x, y, { color = '#fff', layer = document.body, rise = 160 } = {}) {
+export function floatNote(x, y, { color = '#fff', layer = document.body, rise = 160, cls = '' } = {}) {
   const n = document.createElement('span');
-  n.className = 'fx-note';
+  n.className = 'fx-note' + (cls ? ' ' + cls : '');
   n.textContent = ['♪', '♫', '♩', '♬'][(Math.random() * 4) | 0];
   n.style.cssText = `left:${x}px;top:${y}px;color:${color}`;
   layer.appendChild(n);

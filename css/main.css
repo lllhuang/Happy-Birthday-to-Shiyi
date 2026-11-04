@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611031932') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611031932') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611040043') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611040043') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -21,7 +21,11 @@
   --vh: 1vh;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
+  /* 浏览器工具栏收起时多出来的那截高度。滚动场景的画面按收起时的高度铺满，
+     贴底的东西往上补这么多，工具栏展开时也不会被挡住 */
+  --dock: 0px;
 }
+@supports (height: 100lvh) { :root { --dock: calc(100lvh - 100svh); } }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: 100%; background: var(--night); }
@@ -106,7 +110,8 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 /* ---------- 通用 ---------- */
 .scene { position: relative; height: 100vh; height: 100svh; overflow: hidden; }
 .scrolly { position: relative; }
-.sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+/* 画面按工具栏收起时的高度铺满：平板、手机上一滑工具栏收起，屏幕变高，底下不会露出一条纯色 */
+.sticky { position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; }
 
 .polaroid {
   background: #fff; padding: 8px 8px 0; border-radius: 3px;
@@ -129,6 +134,7 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 
 .fx-star { position: fixed; z-index: 70; pointer-events: none; filter: drop-shadow(0 0 4px currentColor); }
 .fx-note { position: fixed; z-index: 55; pointer-events: none; font-size: 22px; text-shadow: 0 0 10px currentColor; }
+.fx-note.on-sky { font-size: 30px; text-shadow: 0 0 3px #fff, 0 0 10px rgba(255,255,255,.9); }
 
 .toast {
   position: fixed; z-index: 75; left: 50%; bottom: calc(28px + var(--safe-bot));
@@ -217,7 +223,7 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
   box-shadow: 0 6px 16px rgba(46,58,99,.18); transition: all .5s cubic-bezier(.3,1.5,.5,1) .15s;
 }
 .gift.open .note { opacity: 1; transform: translate(-50%, 0) scale(1); }
-.tap-hint { position: absolute; z-index: 8; bottom: calc(26px + var(--safe-bot)); left: 0; right: 0; text-align: center; font-size: 14px; color: #2E3A63; text-shadow: 0 0 8px #fff, 0 0 14px #fff; opacity: 0; pointer-events: none; }
+.tap-hint { position: absolute; z-index: 8; bottom: calc(26px + var(--safe-bot) + var(--dock)); left: 0; right: 0; text-align: center; font-size: 14px; color: #2E3A63; text-shadow: 0 0 8px #fff, 0 0 14px #fff; opacity: 0; pointer-events: none; }
 
 /* ---------- 琴房 ---------- */
 #s-music .sticky { display: flex; flex-direction: column; align-items: center; }
@@ -240,7 +246,7 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 .quote { position: relative; margin-top: calc(5vh + var(--safe-top)); text-align: center; padding: 0 12px; }
 .quote p { font-size: min(clamp(28px, 4.2vh, 46px), 7.2vw); letter-spacing: .08em; line-height: 1.35; text-shadow: 0 0 24px rgba(201,184,255,.55); word-break: keep-all; }
 .quote cite { display: block; margin-top: 10px; font-style: normal; font-size: 14px; opacity: .6; }
-.instruments { position: absolute; left: 0; right: 0; bottom: 20vh; display: flex; justify-content: center; align-items: flex-end; gap: 7vw; padding: 0 16px; }
+.instruments { position: absolute; left: 0; right: 0; bottom: calc(20vh + var(--dock)); display: flex; justify-content: center; align-items: flex-end; gap: 7vw; padding: 0 16px; }
 .inst { display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; }
 .inst-label { position: relative; z-index: 1; font-size: 15px; white-space: nowrap; text-shadow: 0 1px 6px rgba(10,6,30,.95), 0 0 14px rgba(10,6,30,.8); animation: labelPulse 2.4s ease-in-out infinite; }
 @keyframes labelPulse { 0%,100% { opacity: .82; } 50% { opacity: 1; } }
@@ -274,7 +280,7 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 #guitar.playing .str:nth-child(2n) { animation-duration: .07s; }
 #guitar.playing .str:nth-child(3n) { animation-duration: .11s; }
 @keyframes vib { 0% { transform: translateX(-.5px); } 50% { transform: translateX(.5px); } 100% { transform: translateX(-.5px); } }
-.next-hint { position: absolute; bottom: calc(3vh + var(--safe-bot)); font-size: 13px; opacity: 0; }
+.next-hint { position: absolute; bottom: calc(3vh + var(--safe-bot) + var(--dock)); font-size: 13px; opacity: 0; }
 
 /* 吉他弹窗 */
 .sheet { position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; background: rgba(10,6,24,.45); animation: fadeIn .3s ease; }
@@ -334,8 +340,10 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 .mm-keys i.c { background: rgba(255,213,138,.8); }
 .mm-win { position: absolute; top: 0; bottom: 0; border-radius: 6px; border: 2px solid #FFD58A; background: rgba(255,213,138,.15); box-shadow: 0 0 12px rgba(255,213,138,.6); }
 .keys-view { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; touch-action: none; border-radius: 8px; }
-/* 不要 will-change：整条琴键会变成一张五千多像素宽的大图，手机上按一下要重画几十块，来不及画的地方会黑一下 */
+/* 平时不要 will-change：整条琴键会变成一张五千多像素宽的大图，手机上按一下要重画几十块，来不及画的地方会黑一下。
+   只在拖动的时候单独成一层，拖起来只是挪图，不用每帧重画琴键 */
 .keys { position: absolute; left: 0; top: 0; bottom: 0; }
+.keys.moving { will-change: transform; }
 .key { position: absolute; top: 0; bottom: 0; width: var(--kw); border-radius: 0 0 8px 8px; }
 .key.white { background: linear-gradient(180deg, #ECE7F5, #FFFFFF 70%, #E9E5F0); border-left: 1.5px solid transparent; border-right: 1.5px solid transparent; background-clip: padding-box; box-shadow: inset 0 -8px 0 #D9D3E4, 0 4px 10px rgba(0,0,0,.35); }
 .key.black { position: absolute; top: 0; bottom: auto; width: calc(var(--kw) * .62); height: 60%; background: linear-gradient(180deg, #2A2438, #0D0A16); border-radius: 0 0 6px 6px; z-index: 2; box-shadow: inset 0 -5px 0 #000, 0 4px 6px rgba(0,0,0,.45); }
@@ -354,7 +362,7 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 .embers { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .slashes { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .lily { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
-.mountains { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 34vh; will-change: transform; }
+.mountains { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: calc(34vh + var(--dock)); will-change: transform; }
 .plum { position: absolute; left: -6px; top: calc(8vh + var(--safe-top)); width: 46vw; max-width: 260px; opacity: 0; }
 
 /* ---------- 加载页：残月 + 一片发光的彼岸花 ---------- */
