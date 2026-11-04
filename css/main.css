@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611040230') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611040230') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611040236') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611040236') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -140,8 +140,8 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 .fx-star { position: fixed; z-index: 70; pointer-events: none; filter: drop-shadow(0 0 4px currentColor); }
 /* 飘起来的音符：本身稍微透明（最亮时 0.8，见 fx.js），外面裹一圈同色的柔光，像一个小光点 */
 .fx-note { position: fixed; z-index: 55; pointer-events: none; font-size: 22px; text-shadow: 0 0 6px currentColor, 0 0 16px currentColor, 0 0 28px currentColor; }
-/* 云上的天是浅色，贴身一圈淡淡的白边让音符的形状还认得出，再往外是同色的光晕 */
-.fx-note.on-sky { font-size: 30px; text-shadow: 0 0 2px rgba(255,255,255,.75), 0 0 9px currentColor, 0 0 20px currentColor, 0 0 34px rgba(255,255,255,.55); }
+/* 云上的天是浅色，贴身一圈白边让音符的形状认得出，往外是同色的光晕（不加白色外圈，免得把颜色冲淡） */
+.fx-note.on-sky { font-size: 30px; text-shadow: 0 0 2px rgba(255,255,255,.9), 0 0 8px currentColor, 0 0 18px currentColor; }
 
 .toast {
   position: fixed; z-index: 75; left: 50%; bottom: calc(28px + var(--safe-bot));

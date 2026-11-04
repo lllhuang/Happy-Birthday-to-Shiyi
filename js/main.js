@@ -1,10 +1,10 @@
-import { CONTENT } from './content.js?v=202611040230';
-import { audio } from './audio.js?v=202611040230';
-import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040230';
-import { Stage } from './stage.js?v=202611040230';
-import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040230';
-import { playTransition } from './transition.js?v=202611040230';
-import { paintBrush } from './brush.js?v=202611040230';
+import { CONTENT } from './content.js?v=202611040236';
+import { audio } from './audio.js?v=202611040236';
+import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040236';
+import { Stage } from './stage.js?v=202611040236';
+import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040236';
+import { playTransition } from './transition.js?v=202611040236';
+import { paintBrush } from './brush.js?v=202611040236';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -196,8 +196,8 @@ const seaDusk = $('.sea-dusk', sea);
 // 每响一个音，从点的地方飘起一个音符，音越高飘得越高。
 // 颜色是赤橙黄绿青蓝紫，按唱名对应：do 赤、re 橙、mi 黄、fa 绿、sol 青、la 蓝、si 紫（C 大调，升降音算下面那个音）。
 // 天空是浅粉浅蓝，颜色取得偏深，再描一圈白光，才看得清
-// 赤橙黄绿青蓝紫对应 do 到 si：用亮、鲜的颜色，压在浅色天空上不发灰
-const TUNE_COLORS = ['#FF4F6E', '#FF9A2E', '#FFC81F', '#2FD86A', '#16CFD6', '#3D8BFF', '#B266FF'];
+// 赤橙黄绿青蓝紫对应 do 到 si：浅一些的粉彩色，配上光晕像飘着的小光点
+const TUNE_COLORS = ['#FF7F97', '#FFAE5E', '#FFCF45', '#66DC8F', '#52D2DC', '#77ABFF', '#BF94FF'];
 const DEGREE = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6]; // 音名（C=0）到唱名的序号
 let tuneIdx = 0;
 function nextTuneNote(x, y) {
