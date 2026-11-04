@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611040049';
-import { audio } from './audio.js?v=202611040049';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611040049';
-import { listenForBlow } from './blow.js?v=202611040049';
-import { HAND } from './hand.js?v=202611040049';
+import { CONTENT } from './content.js?v=202611040104';
+import { audio } from './audio.js?v=202611040104';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611040104';
+import { listenForBlow } from './blow.js?v=202611040104';
+import { HAND } from './hand.js?v=202611040104';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -268,7 +268,7 @@ export class Stage {
     this.room.addEventListener('click', (e) => {
       if (e.target.closest('.window')) return;
       if (this.state === 'curtain') this._closeCurtains();
-      if (this.state === 'sleep-ask') this._finaleThenSleep();
+      if (this.state === 'sleep-ask') this._sleepNow();
     });
     $('#dawn-btn').addEventListener('click', () => this.morning());
     $('#banner').addEventListener('click', () => this._letter());
@@ -478,13 +478,13 @@ export class Stage {
       if (this._mine >= 5) {
         clearTimeout(this._t30);
         this.state = 'mine-done';
+        // 等她的第五朵炸完，接着放最后一波
         await sleep(2600);
-        this.state = 'sleep-ask';
-        this._hint(C.night.sleep, { belowSill: true });
+        this._finaleThenSleep();
       }
       return;
     }
-    if (this.state === 'sleep-ask') return this._finaleThenSleep();
+    if (this.state === 'sleep-ask') return this._sleepNow();
     if (this.state === 'curtain') return this._closeCurtains();
     if (this.state === 'm-closed') this._openMorning();
   }
@@ -504,17 +504,23 @@ export class Stage {
     this._hint(C.night.curtain, { belowSill: true });
   }
 
-  // 情况二：30 秒内放满 5 朵 → 提示“该睡觉了”，她点了以后放最后一波，然后自动拉窗帘
+  // 情况二：30 秒内放满 5 朵 → 接着放最后一波；所有烟花放完、镜头拉远时才提示“该睡觉了”，
+  // 她点一下就关窗拉窗帘
   async _finaleThenSleep() {
-    if (this.state !== 'sleep-ask') return;
+    if (this.state !== 'mine-done') return;
     this.state = 'finale';
     this._hint('');
     clearInterval(this._auto);
     this._finale();
     await sleep(6200 + WORDS.length * WORD_GAP * 1000);
-    // 烟花放完，镜头慢慢拉远，拉到一半开始关窗拉窗帘，两者重叠
     this._zoom(false);
     await sleep(CURTAIN_LEAD);
+    this.state = 'sleep-ask';
+    this._hint(C.night.sleep, { belowSill: true });
+  }
+
+  _sleepNow() {
+    if (this.state !== 'sleep-ask') return;
     this.state = 'curtain';
     this._closeCurtains();
   }
@@ -619,17 +625,31 @@ export class Stage {
     await sleep(3200);
     this._lightButtons(true);
     audio.chirp();
-    // “龙复苏”在窗户下面闪几下就消失，接着出现“推开窗看看吧”，两句在同一个位置。
-    // 闪的时候不完全消失：深、浅、深、浅、深、浅，最后才淡没。
-    // 节奏和原来一样：每 900 毫秒换一次深浅，样式表里过渡 0.6 秒
+    // “龙复苏”在窗户下面：深、浅、深，然后慢慢淡没，接着出现“推开窗看看吧”，两句在同一个位置。
+    // 闪的时候不完全消失，浅的时候留 0.35。整段用一个连续的动画（交给显卡合成，页面别处在画东西也不卡），
+    // 每段都缓进缓出，节奏和原来差不多：约 0.9 秒换一次深浅，最后用 1.6 秒淡没
     // 先藏起来再填字，免得字一出来就整个亮一下再淡掉
-    this.top.style.opacity = 0;
+    const top = this.top;
+    top.style.opacity = 0;
     await sleep(900);
-    this.top.textContent = C.morning.title;
-    for (const o of [1, 0.35, 1, 0.35, 1, 0.35, 0]) {
-      this.top.style.opacity = o;
-      await sleep(900);
-    }
+    top.textContent = C.morning.title;
+    const T = 4500;
+    const at = (ms) => ms / T;
+    const e = 'ease-in-out'; // 每一段内部缓进缓出
+    const glow = top.animate(
+      [
+        { opacity: 0, offset: 0, easing: e },
+        { opacity: 1, offset: at(700), easing: e },
+        { opacity: 0.35, offset: at(1700), easing: e },
+        { opacity: 1, offset: at(2700), easing: e },
+        { opacity: 1, offset: at(2900), easing: e },
+        { opacity: 0, offset: 1 },
+      ],
+      { duration: T }
+    );
+    await glow.finished.catch(() => {});
+    top.style.opacity = 0;
+    glow.cancel();
     this.state = 'm-closed';
     this._hint(C.morning.open);
     if (toLetter) {

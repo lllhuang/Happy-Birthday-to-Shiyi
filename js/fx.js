@@ -121,11 +121,11 @@ function shapePoints(kind, gap = 6) {
     return pts;
   }
   if (kind === 'star') {
-    // 五角星的轮廓：外角半径 1、内角半径 0.382，一共 10 条边，点沿边均匀撒开；尖朝上
+    // 五角星的轮廓：外角半径 1、内角半径 0.382，一共 10 条边，点沿边均匀撒开；放的时候再随机转个角度
     const v = [];
     for (let i = 0; i < 10; i++) {
       const a = -Math.PI / 2 + (i * Math.PI) / 5, r = i % 2 ? 0.382 : 1;
-      v.push([Math.cos(a) * r, Math.sin(a) * r + 0.1]);
+      v.push([Math.cos(a) * r, Math.sin(a) * r]);
     }
     const pts = [];
     const per = 7; // 每条边 7 个点，一共 70 个，和爱心一样多
@@ -342,6 +342,11 @@ export class Fireworks {
         scale = (Math.min(this.w, this.h) * (type === 'heart' ? 0.22 : type === 'star' ? 0.15 : 0.3)) / this.Z;
       }
       const hold = r.hold || 2;
+      // 五角星每朵转一个随机角度，朝向各不相同（转 72 度就和原来重合，所以在 0 到 72 度里挑）
+      if (type === 'star') {
+        const a = rnd(0, Math.PI * 0.4), ca = Math.cos(a), sa = Math.sin(a);
+        pts = pts.map(([px, py]) => [px * ca - py * sa, px * sa + py * ca]);
+      }
       // 造型不受粒子上限限制，缺几颗就看不出是什么形状了。火星停下后线长接近 0，dot 让它留成一个亮点
       pts.forEach(([px, py]) => {
         this.parts.push({ x, y, px: x, py: y, vx: px * scale * 3.6, vy: py * scale * 3.6, life: 1, decay: 1 / rnd(hold, hold + 0.4), c: Math.random() < 0.8 ? pal[0] : pal[1], drag: 0.94, g: 6, trail: 0.3, width: 2.2 / this.Z, twinkle: type === 'text' && Math.random() < 0.12, dot: true });

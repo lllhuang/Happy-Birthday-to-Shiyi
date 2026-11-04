@@ -1,10 +1,10 @@
-import { CONTENT } from './content.js?v=202611040049';
-import { audio } from './audio.js?v=202611040049';
-import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040049';
-import { Stage } from './stage.js?v=202611040049';
-import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040049';
-import { playTransition } from './transition.js?v=202611040049';
-import { paintBrush } from './brush.js?v=202611040049';
+import { CONTENT } from './content.js?v=202611040104';
+import { audio } from './audio.js?v=202611040104';
+import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040104';
+import { Stage } from './stage.js?v=202611040104';
+import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040104';
+import { playTransition } from './transition.js?v=202611040104';
+import { paintBrush } from './brush.js?v=202611040104';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -57,15 +57,19 @@ soundBtn.addEventListener('click', () => {
 const starCanvas = $('#stars');
 const starCtx = starCanvas.getContext('2d');
 let stars = [];
+let starW = 0, starH = 0;
 function setupStars() {
   const dpr = Math.min(devicePixelRatio || 1, 2);
-  starCanvas.width = innerWidth * dpr;
-  starCanvas.height = innerHeight * dpr;
+  // 按背景层的实际大小画（它比看得见的屏幕可能高一点），星星撒满整层
+  starW = starCanvas.clientWidth || innerWidth;
+  starH = Math.max(starCanvas.clientHeight, innerHeight);
+  starCanvas.width = starW * dpr;
+  starCanvas.height = starH * dpr;
   starCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const n = Math.round((innerWidth * innerHeight) / 4200);
+  const n = Math.round((starW * starH) / 4200);
   stars = Array.from({ length: n }, () => ({
-    x: Math.random() * innerWidth,
-    y: Math.random() * innerHeight,
+    x: Math.random() * starW,
+    y: Math.random() * starH,
     r: Math.random() * 1.2 + 0.3,
     s: Math.random() * 2 + 0.5,
     o: Math.random() * Math.PI * 2,
@@ -77,7 +81,7 @@ function drawStars(t) {
   if (!starsOn) return;
   // 钢琴面板打开时整屏都被盖住，星空不用画，省下来给拖琴键
   if (starOpacity > 0.01 && !document.body.classList.contains('piano-open')) {
-    starCtx.clearRect(0, 0, innerWidth, innerHeight);
+    starCtx.clearRect(0, 0, starW, starH);
     for (const s of stars) {
       const a = 0.45 + 0.55 * Math.sin(t / 1000 * s.s + s.o);
       starCtx.globalAlpha = a;
@@ -440,7 +444,8 @@ function layoutPiano() {
   pianoPanel.style.setProperty('--H', H + 'px');
   pianoPanel.classList.toggle('rotated', rotated);
   viewW = keysView.clientWidth;
-  const nVisible = Math.min(24, Math.max(10, Math.round(viewW / (finePointer ? 52 : 46))));
+  // 一屏最多两个半八度（17.5 个白键），宽屏上琴键宽一些，好按
+  const nVisible = Math.min(17.5, Math.max(10, Math.round(viewW / (finePointer ? 52 : 46))));
   keyW = viewW / nVisible;
   keysEl.style.setProperty('--kw', keyW + 'px');
   keysEl.style.width = whites.length * keyW + 'px';
