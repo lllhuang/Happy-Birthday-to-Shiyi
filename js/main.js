@@ -1,10 +1,10 @@
-import { CONTENT } from './content.js?v=202611040203';
-import { audio } from './audio.js?v=202611040203';
-import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040203';
-import { Stage } from './stage.js?v=202611040203';
-import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040203';
-import { playTransition } from './transition.js?v=202611040203';
-import { paintBrush } from './brush.js?v=202611040203';
+import { CONTENT } from './content.js?v=202611040221';
+import { audio } from './audio.js?v=202611040221';
+import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040221';
+import { Stage } from './stage.js?v=202611040221';
+import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040221';
+import { playTransition } from './transition.js?v=202611040221';
+import { paintBrush } from './brush.js?v=202611040221';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -118,8 +118,10 @@ const STOPS = [
   ['#s-ink', 0.75, '#07040B', '#1A0610', 0.25],
 ];
 let stopPos = [];
+let cloudStickyH = 0; // 云上那一段 .sticky 的高度（100lvh），尺寸变了再量
 function measure() {
   const vh = document.documentElement.clientHeight;
+  cloudStickyH = $('#s-cloud .sticky').clientHeight;
   stopPos = STOPS.map(([sel, p, a, b, s]) => {
     const el = $(sel);
     const span = Math.max(1, el.offsetHeight - vh);
@@ -289,16 +291,19 @@ function renderCloud(p) {
     b.style.opacity = o;
     b.style.transform = `translateY(${(1 - o) * 10}px)`;
   });
-  // 照片没轮到时停在屏幕下面等着。平板、手机浏览器收起工具栏以后屏幕变高（innerHeight 比 vh 大），
-  // 要按变高以后的高度停，否则三张会一样高地露在屏幕底部
-  const H = Math.max(vh, innerHeight);
-  const ty = (p0, p1) => {
+  // 照片没轮到时停在屏幕下面等着，飞出去以后停在屏幕上面。平板、手机浏览器一滑就收起工具栏、屏幕变高，
+  // 而 vh 和 innerHeight 要等一会儿才跟上，停在“屏幕高度”下面的照片会露出来一闪一闪。
+  // 所以按工具栏收起时最高的高度（.sticky 是 100lvh）往下多停一截，而且没轮到、飞出去以后都直接藏起来
+  const H = Math.max(cloudStickyH, vh, innerHeight);
+  const fly = (el, p0, p1, rot) => {
     const k = clamp((p - p0) / (p1 - p0));
-    return lerp(1.05 * H, -0.75 * vh, k);
+    const on = p > p0 && p < p1;
+    el.style.visibility = on ? 'visible' : 'hidden';
+    if (on) el.style.transform = `translate3d(0,${lerp(H + 0.12 * vh, -0.75 * vh, k)}px,0) rotate(${rot}deg)`;
   };
-  polTrio.style.transform = `translate3d(0,${ty(0.1, 0.56)}px,0) rotate(${lerp(9, 4, p)}deg)`;
-  polRei.style.transform = `translate3d(0,${ty(0.3, 0.72)}px,0) rotate(${lerp(-12, -6, p)}deg)`;
-  polFamily.style.transform = `translate3d(0,${ty(0.46, 0.86)}px,0) rotate(${lerp(-4, -8, p)}deg)`;
+  fly(polTrio, 0.1, 0.56, lerp(9, 4, p));
+  fly(polRei, 0.3, 0.72, lerp(-12, -6, p));
+  fly(polFamily, 0.46, 0.86, lerp(-4, -8, p));
   tapHint.style.opacity = Math.min(clamp((p - 0.03) / 0.05), clamp((0.9 - p) / 0.05)) * 0.7;
 }
 
@@ -405,6 +410,8 @@ export function stopSong({ fade = false } = {}) {
   }
 }
 
+// 章节锁：手指一按到吉他或钢琴上就算点过（平板上一次轻点有时会被当成滑动的开头，不触发 click）
+['#guitar', '#piano-btn'].forEach((sel) => $(sel).addEventListener('pointerdown', tryMusic, { passive: true }));
 guitar.addEventListener('click', () => {
   audio.unlock();
   tryMusic();

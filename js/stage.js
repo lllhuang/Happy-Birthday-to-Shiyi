@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611040203';
-import { audio } from './audio.js?v=202611040203';
-import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040203';
-import { listenForBlow } from './blow.js?v=202611040203';
-import { HAND } from './hand.js?v=202611040203';
+import { CONTENT } from './content.js?v=202611040221';
+import { audio } from './audio.js?v=202611040221';
+import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040221';
+import { listenForBlow } from './blow.js?v=202611040221';
+import { HAND } from './hand.js?v=202611040221';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -698,71 +698,26 @@ export class Stage {
     }
   }
 
-  // 窗帘中间那道光和丁达尔光柱：先算出窗帘全拉开时的缝，按它摆好；之后每帧量两片窗帘内侧的边，
-  // 只改横向缩放（交给显卡合成，不重画），窗帘拉到哪里光就到哪里。光柱里飘着浮尘，屋里亮起来以后慢慢看不见
+  // 窗帘中间那道光：每一帧量两片窗帘内侧的边，光正好填在两片窗帘中间的缝里，
+  // 窗帘拉到哪里光就到哪里。光调得比原来弱（最亮 0.5），不刺眼。缝刚拉开时最亮，窗帘拉开、屋里亮起来以后慢慢淡掉
   _dawnLight() {
-    const d = $('#dawn'), rays = $('#rays'), mc = $('#motes'), cl = $('#cur-l'), cr = $('#cur-r');
-    const T = 6000, TR = 9500, t0 = performance.now();
+    const d = $('#dawn'), cl = $('#cur-l'), cr = $('#cur-r');
+    const T = 5600, t0 = performance.now();
     cancelAnimationFrame(this._dawnRaf);
     const ss = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
-    const w = this.win.getBoundingClientRect();
-    // 全拉开时窗帘只剩 26% 宽（见样式表 .curtain），左片左边、右片右边不动
-    const lr = cl.getBoundingClientRect(), rr = cr.getBoundingClientRect();
-    const Lo = lr.left + cl.offsetWidth * 0.26, Ro = rr.right - cr.offsetWidth * 0.26, cx = (Lo + Ro) / 2, G = Ro - Lo;
-    const H = this.room.clientHeight;
-    const top = w.top + w.height * 0.04, bot = H;
-    Object.assign(d.style, { left: `${Lo}px`, width: `${G}px`, top: `${w.top}px`, height: `${w.height * 1.22}px`, transformOrigin: '50% 0' });
-    // 光柱：上边就是缝，往下越照越宽，整体往左下斜（太阳在窗外右上方）
-    const shift = w.width * 0.3, spread = w.width * 0.18 + G * 0.35;
-    const P = [[Lo, top], [Ro, top], [Ro - shift + spread * 0.3, bot], [Lo - shift - spread, bot]];
-    rays.style.clipPath = `polygon(${P.map(([x, y]) => `${x}px ${y}px`).join(',')})`;
-    rays.style.transformOrigin = `${cx}px ${top}px`;
-    const m = `linear-gradient(rgba(0,0,0,.1) ${top}px, rgba(0,0,0,.28) ${w.bottom - w.height * 0.2}px, #000 ${w.bottom + 40}px, transparent ${bot}px)`;
-    rays.style.webkitMaskImage = rays.style.maskImage = m;
-    // 浮尘：画布只铺光柱的范围，1 倍分辨率；只在当前光柱里画，亮度跟着光柱上淡下浓
-    const bx = Math.floor(Math.min(...P.map((p) => p[0]))), bw = Math.ceil(Math.max(...P.map((p) => p[0]))) - bx;
-    Object.assign(mc.style, { left: `${bx}px`, top: `${top}px`, width: `${bw}px`, height: `${bot - top}px` });
-    mc.width = Math.max(1, bw); mc.height = Math.max(1, Math.round(bot - top));
-    const ctx = mc.getContext('2d');
-    const fade = (y) => (y < w.bottom - top ? 0.2 + 0.6 * (y / (w.bottom - top)) : 1 - (y - (w.bottom - top)) / (bot - w.bottom));
-    const motes = Array.from({ length: Math.round(Math.min(60, (bw * (bot - top)) / 7000)) }, () => ({
-      u: Math.random(), v: Math.random(), r: 0.6 + Math.random() * 1.5,
-      vu: (Math.random() - 0.5) * 0.02, vv: (Math.random() - 0.3) * 0.012, ph: Math.random() * 6.3, sp: 0.6 + Math.random() * 1.4,
-    }));
-    let last = t0;
     const frame = (now) => {
-      const t = now - t0, dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
+      const t = now - t0;
+      const w = this.win.getBoundingClientRect();
       const L = cl.getBoundingClientRect().right, R = cr.getBoundingClientRect().left;
-      const g = Math.max(0, Math.min(1, (R - L) / G));
-      const k = Math.max(0.001, g).toFixed(4);
-      d.style.transform = `scaleX(${k})`;
-      rays.style.transform = `scaleX(${k})`;
-      const open = Math.min(1, ((R - L) / w.width) * 4);
-      d.style.opacity = (0.55 * open * (1 - ss(0.5, 1, t / T))).toFixed(3);
-      const ro = Math.min(1, ((R - L) / w.width) * 3) * (1 - ss(0.55, 1, t / TR));
-      rays.style.opacity = (0.9 * ro).toFixed(3);
-      // 浮尘：u 是在光柱里从左到右的比例，v 是从上到下的比例；跟着光柱的宽度走
-      ctx.clearRect(0, 0, mc.width, mc.height);
-      if (ro > 0.01) {
-        for (const p of motes) {
-          p.u = (p.u + p.vu * dt + 1) % 1;
-          p.v = (p.v + p.vv * dt + 1) % 1;
-          const y = p.v * (bot - top);
-          const xl = Lo - (shift + spread) * p.v, xr = Ro + (spread * 0.3 - shift) * p.v; // 这一高度上光柱全开时的左右边
-          const half = ((xr - xl) / 2) * g;
-          const mid = cx + ((xl + xr) / 2 - cx) * g; // 横向缩放以后这一高度的中心
-          const x = mid - half + p.u * half * 2 - bx;
-          const a = (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(p.ph + (t / 1000) * p.sp))) * fade(y) * ro;
-          if (a < 0.02) continue;
-          ctx.fillStyle = `rgba(255,244,220,${(a * 0.85).toFixed(3)})`;
-          ctx.beginPath();
-          ctx.arc(x, y, p.r, 0, 6.283);
-          ctx.fill();
-        }
-      }
-      if (t < TR) this._dawnRaf = requestAnimationFrame(frame);
-      else { d.style.opacity = rays.style.opacity = 0; ctx.clearRect(0, 0, mc.width, mc.height); }
+      const gap = Math.max(0, R - L);
+      const g = gap / w.width;
+      d.style.left = `${L}px`;
+      d.style.width = `${gap}px`;
+      d.style.top = `${w.top}px`;
+      d.style.height = `${w.height * 1.22}px`;
+      d.style.opacity = (0.5 * Math.min(1, g * 4) * (1 - ss(0.55, 1, t / T))).toFixed(3);
+      if (t < T) this._dawnRaf = requestAnimationFrame(frame);
+      else d.style.opacity = 0;
     };
     this._dawnRaf = requestAnimationFrame(frame);
   }
@@ -902,6 +857,11 @@ export class Stage {
       lines.appendChild(p);
     });
     handwrite(L, [['.paper .to', HAND.lines.to], ...[...lines.children].map((p, i) => [p, HAND.lines['line' + (i + 1)]]), ['.paper .sign', HAND.lines.sign], ['.paper .ldate', HAND.lines.date]]);
+    // 信这一层按“现在看得见的高度”铺：手机、平板浏览器工具栏没收起时，看得见的屏幕比 100lvh 矮，
+    // 不这样的话信封和展开后的信纸都会落在看得见的中心偏下
+    const fit = () => { L.style.bottom = 'auto'; L.style.height = `${innerHeight}px`; };
+    fit();
+    addEventListener('resize', fit);
     L.hidden = false;
     clearInterval(this._birds); // 歌响起来以后，鸟叫就不抢了
     audio.playEnding(C.ending.file).catch(() => {});

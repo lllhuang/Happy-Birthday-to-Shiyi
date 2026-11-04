@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611040203') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611040203') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611040221') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611040221') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -588,19 +588,8 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 /* 天亮：窗帘慢慢拉开，光从缝里进来，屋里跟着一点点亮 */
 #st-room.morning .dark { transition: opacity 5.2s cubic-bezier(.5,0,.7,1); }
 #st-room.morning .curtain { transition-duration: 4s; transition-timing-function: cubic-bezier(.45,0,.3,1); }
-/* 窗帘缝里透进来的光：按窗帘全拉开时的缝摆好，脚本每帧只改横向缩放（交给显卡），窗帘拉到哪里光就到哪里。
-   往下多出一截，漫到窗台下面再淡掉。暖一点、柔一点，不刺眼 */
-.dawn { position: absolute; z-index: 7; opacity: 0; pointer-events: none; background: linear-gradient(90deg, rgba(255,222,170,.45), rgba(255,240,212,.8) 50%, rgba(255,222,170,.45)); filter: blur(16px); -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); transform: scaleX(0); will-change: transform, opacity; }
-/* 丁达尔效应：从缝里斜着往左下照进屋的光柱。形状按全拉开时裁好，脚本每帧只改横向缩放；
-   里面粗细不一的光带由内层慢慢平移（也只动 transform）。上面淡（压在窗户上）、中间最明显、到地上淡掉 */
-.rays { position: absolute; inset: 0; z-index: 7; opacity: 0; pointer-events: none; overflow: hidden; transform: scaleX(0); will-change: transform, opacity; }
-.rays i { position: absolute; top: 0; bottom: 0; left: -120px; right: -120px; animation: raysDrift 9s linear infinite;
-  background:
-    repeating-linear-gradient(104deg, rgba(255,232,190,0) 0, rgba(255,236,200,.2) 12px, rgba(255,232,190,0) 26px, rgba(255,232,190,0) 50px),
-    repeating-linear-gradient(98deg, rgba(255,226,180,0) 0, rgba(255,230,190,.15) 22px, rgba(255,226,180,0) 44px, rgba(255,226,180,0) 104px),
-    linear-gradient(rgba(255,230,190,.1), rgba(255,230,190,.1)); }
-@keyframes raysDrift { from { transform: translateX(0); } to { transform: translateX(104px); } }
-.motes { position: absolute; z-index: 7; pointer-events: none; }
+/* 窗帘缝里透进来的光：位置和宽度由脚本每帧跟着窗帘设；往下多出一截，漫到窗台下面再淡掉 */
+.dawn { position: absolute; z-index: 7; opacity: 0; pointer-events: none; background: linear-gradient(90deg, rgba(255,232,190,.55), rgba(255,248,230,.95) 50%, rgba(255,232,190,.55)); filter: blur(12px); -webkit-mask-image: linear-gradient(#000 76%, transparent); mask-image: linear-gradient(#000 76%, transparent); will-change: left, width, opacity; }
 .sky-dawn { position: absolute; inset: 0; opacity: 0; pointer-events: none; background: linear-gradient(180deg, #4A4A8E, #C78AA6 58%, #FFC48E); transition: opacity 6s ease-in; }
 #st-room.dawning .sky-dawn { opacity: 1; transition: none; }
 
