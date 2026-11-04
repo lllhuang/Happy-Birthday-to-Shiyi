@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611040236';
-import { audio } from './audio.js?v=202611040236';
-import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040236';
-import { listenForBlow } from './blow.js?v=202611040236';
-import { HAND } from './hand.js?v=202611040236';
+import { CONTENT } from './content.js?v=202611040241';
+import { audio } from './audio.js?v=202611040241';
+import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040241';
+import { listenForBlow } from './blow.js?v=202611040241';
+import { HAND } from './hand.js?v=202611040241';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -259,7 +259,7 @@ export class Stage {
     room.classList.remove('panning');
     room.getAnimations().forEach((a) => a.cancel());
     this.show('#st-room');
-    this._hint(C.night.open);
+    this._hint(C.night.open, { atCurtain: true });
   }
 
   // ================= 夜晚的窗 =================
@@ -311,18 +311,24 @@ export class Stage {
 
   // 两句“该睡觉了”：字的中心线对齐窗帘的下沿。跟着窗户走，不看屏幕底边，
   // 平板浏览器工具栏没收起时也不会落到看不见的地方。镜头拉远停下以后才放
-  _placeAtCurtain() {
-    const h = this.hint, wrap = this.wrap, win = this.win;
+  _placeAtCurtain(el = this.hint) {
+    el.style.top = '';
+    el.style.bottom = '';
+    const y = this._curtainY();
+    if (y == null || el.offsetParent !== this.wrap.offsetParent) return;
+    el.style.top = `${y - el.offsetHeight / 2}px`;
+    el.style.bottom = 'auto';
+  }
+
+  // 窗帘下沿在舞台里的高度（镜头停下以后的位置）
+  _curtainY() {
+    const wrap = this.wrap, win = this.win;
     const cur = wrap.querySelector('.curtain');
-    h.style.top = '';
-    h.style.bottom = '';
-    if (!cur || cur.offsetParent !== wrap || h.offsetParent !== wrap.offsetParent) return;
+    if (!cur || cur.offsetParent !== wrap) return null;
     const z = this._z || 1;
     const cb = cur.offsetTop + cur.offsetHeight;
     const oy = win.offsetTop + win.offsetHeight / 2;
-    const y = z === 1 ? wrap.offsetTop + cb : innerHeight / 2 + (cb - oy) * z;
-    h.style.top = `${y - h.offsetHeight / 2}px`;
-    h.style.bottom = 'auto';
+    return z === 1 ? wrap.offsetTop + cb : innerHeight / 2 + (cb - oy) * z;
   }
 
   // 看烟花时镜头推近：窗户完整露出来、尽可能大。竖屏时窗宽占满屏幕宽，横屏时窗高占满屏幕高。
@@ -372,7 +378,7 @@ export class Stage {
   async night() {
     this._prepNight();
     this.show('#st-room');
-    this._hint(C.night.open);
+    this._hint(C.night.open, { atCurtain: true });
   }
 
   _autoLaunch() {
@@ -673,6 +679,7 @@ export class Stage {
     top.style.opacity = 0;
     await sleep(900);
     top.textContent = C.morning.title;
+    this._placeAtCurtain(top); // 和后面的“推开窗看看吧”同一个位置：中心线对齐窗帘下沿
     const T = 4500;
     const at = (ms) => ms / T;
     const e = 'ease-in-out'; // 每一段内部缓进缓出
@@ -691,7 +698,7 @@ export class Stage {
     top.style.opacity = 0;
     glow.cancel();
     this.state = 'm-closed';
-    this._hint(C.morning.open);
+    this._hint(C.morning.open, { atCurtain: true });
     if (toLetter) {
       await this._openMorning(true);
       this._letter();
