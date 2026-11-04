@@ -37,7 +37,7 @@ export function floatNote(x, y, { color = '#fff', layer = document.body, rise = 
   const anim = n.animate(
     [
       { transform: 'translate(-50%,-50%) scale(.6)', opacity: 0 },
-      { transform: `translate(calc(-50% + ${dx * 0.4}px),calc(-50% - ${rise * 0.3}px)) scale(1)`, opacity: 1, offset: 0.25 },
+      { transform: `translate(calc(-50% + ${dx * 0.4}px),calc(-50% - ${rise * 0.3}px)) scale(1)`, opacity: 0.8, offset: 0.25 }, // 最亮时也留一点透明
       { transform: `translate(calc(-50% + ${dx}px),calc(-50% - ${rise}px)) scale(1.1) rotate(${dx / 4}deg)`, opacity: 0 },
     ],
     { duration: 2200 + Math.random() * 800, easing: 'ease-out' }
