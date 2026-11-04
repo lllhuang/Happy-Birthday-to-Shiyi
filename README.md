@@ -19,6 +19,7 @@
 - 贺卡上的手写字（`assets/img/hand.png`）由 lllhuang 亲笔书写，版权归 lllhuang 所有。
 - 字体：悠哉字体（Yozai，by LXGW）、马善政楷书（Ma Shan Zheng），均采用 SIL Open Font License 1.1，许可证在 `assets/fonts/`。
 - 钢琴音色：Salamander Grand Piano V3，作者 Alexander Holm，CC-BY 3.0（经 Tone.js 的音频库取得）。
+- 蛋糕底下的桌面是 [Poly Haven](https://polyhaven.com/a/white_maple_veneer) 的白枫木纹理（White Maple Veneer，CC0 公有领域），说明在 `assets/img/table-maple.LICENSE.txt`。
 - 信封的纸张纹理来自 [eLuvLetter](https://github.com/Genius-Society/eLuvLetter)（Apache License 2.0），转成灰度并提亮，许可证在 `assets/img/paper-texture.LICENSE.txt`。
 - 其他声音都是代码实时合成的；《Happy Birthday to You》的旋律属于公有领域，钢琴编配是我们自己写的。
 

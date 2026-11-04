@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611031451') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611031451') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611031835') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611031835') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -386,7 +386,7 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 /* 进度条是一笔毛笔横画（js/brush.js 现画）；--x 是笔锋走到的位置，前面留一小段渐隐当作笔尖 */
 .ld-bar { position: relative; width: 100%; height: 22px; }
 .ld-bar canvas { position: absolute; left: 0; top: -6px; width: 100%; height: calc(100% + 12px); } /* 画布比进度条高一些，笔画按重的地方不会被切掉 */
-.brush-ink { --x: 0px; -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--x) - 18px), transparent var(--x)); mask-image: linear-gradient(90deg, #000 calc(var(--x) - 18px), transparent var(--x)); filter: drop-shadow(0 0 5px rgba(255,96,80,.5)); }
+.brush-ink { --x: 0px; -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--x) - 18px), transparent var(--x)); mask-image: linear-gradient(90deg, #000 calc(var(--x) - 18px), transparent var(--x)); filter: drop-shadow(0 0 5px rgba(255,112,90,.5)); }
 #ld-tip { transition: opacity .5s; }
 .ld-meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font-size: 14px; color: rgba(245,239,230,.7); }
 #ld-pct { font-variant-numeric: tabular-nums; }
@@ -405,7 +405,18 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 #st-cake.out .cake-glow { opacity: .1; }
 .cake-top { margin-top: calc(9vh + var(--safe-top)); font-size: clamp(28px, 4vh, 44px); transition: opacity .8s; letter-spacing: .1em; color: #FFF1DD; text-shadow: 0 0 22px rgba(255,200,120,.5); }
 .cake-wrap { position: relative; width: min(84vw, 50vh); margin-top: 2vh; }
-.cake-svg { width: 100%; height: auto; overflow: visible; }
+.cake-svg { position: relative; width: 100%; height: auto; overflow: visible; }
+/* 蛋糕底下的桌子：白枫木桌面（Poly Haven 的 White Maple Veneer，CC0），用透视放倒。
+   桌子横贯整个屏幕，靠烛光照亮，越往两边、越往后越暗，融进房间里；前沿下面照旧是暗的，许愿的字和按钮不会落在白桌面上 */
+.table { position: absolute; left: 50%; width: 100vw; margin-left: -50vw; top: 62%; height: calc(38% + 7vh); perspective: 520px; perspective-origin: 50% -40%; overflow: hidden; pointer-events: none; }
+.table-top { position: absolute; left: -30%; right: -30%; bottom: 12px; height: 230%; transform-origin: 50% 100%; transform: rotateX(74deg); background: url(../assets/img/table-maple.jpg) left center / calc(100% / 3) auto repeat; }
+.table-edge { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: linear-gradient(#EAE4DA, #D3CABD 55%, #A39889); box-shadow: 0 12px 26px rgba(0,0,0,.6); }
+.table::after { content: ''; position: absolute; inset: -2px 0 0; background:
+  radial-gradient(ellipse 70% 120% at 50% 35%, rgba(255,190,120,.06) 0, rgba(40,22,30,.16) 48%, rgba(18,10,16,.66) 80%, #0E080D 100%),
+  linear-gradient(rgba(14,8,13,.85), rgba(14,8,13,0) 32%); transition: opacity 1.2s; }
+#st-cake.out .table::after { background:
+  radial-gradient(ellipse 52% 95% at 50% 30%, rgba(30,18,26,.55) 0, rgba(24,14,20,.72) 45%, rgba(14,8,13,.92) 78%, #0C070C 100%),
+  linear-gradient(rgba(12,7,12,.92), rgba(12,7,12,0) 38%); }
 .cake-svg .num { font-family: var(--font); font-size: 70px; font-weight: 700; paint-order: stroke; }
 .flame-g { transition: opacity .4s; }
 .flame { transform-box: fill-box; transform-origin: 50% 100%; animation: flicker 1.3s ease-in-out infinite; }

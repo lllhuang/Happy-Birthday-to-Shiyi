@@ -155,22 +155,38 @@ export async function paintBrush(ink, track) {
     if (me !== job) return;
   }
   const a = r.value;
-  for (const [c, paint] of [
-    [ink, (d) => [150 + 75 * (1 - d), 14 + 46 * (1 - d), 30 + 30 * (1 - d), 255 * Math.min(1, d * 1.2)]],
-    [track, (d) => [245, 239, 230, 255 * d * 0.13]],
-  ]) {
+  // 墨色从左往右由朱砂红渐变到加载页那弯月亮的桃橙色（#FF8A6A），墨浓的地方深一些，干的地方浅一些
+  const stops = [[0, [184, 26, 44]], [0.5, [226, 64, 62]], [1, [255, 140, 106]]];
+  const tint = (u) => {
+    const i = u < stops[1][0] ? 1 : 2;
+    const [k0, c0] = stops[i - 1], [k1, c1] = stops[i];
+    const t = (u - k0) / (k1 - k0);
+    return c0.map((v, j) => v + (c1[j] - v) * t);
+  };
+  const cols = Array.from({ length: W }, (_, x) => tint(x / (W - 1)));
+  fill(ink, (data, i, d, x) => {
+    const [r, g, b] = cols[x], k = 0.82 + 0.18 * (1 - d);
+    data[i] = r * k + 22 * (1 - d);
+    data[i + 1] = g * k + 16 * (1 - d);
+    data[i + 2] = b * k + 8 * (1 - d);
+    data[i + 3] = 255 * Math.min(1, d * 1.2);
+  });
+  // 两张分在两帧里填，一帧不会太长
+  await new Promise(requestAnimationFrame);
+  if (me !== job) return;
+  fill(track, (data, i, d) => {
+    data[i] = 245;
+    data[i + 1] = 239;
+    data[i + 2] = 230;
+    data[i + 3] = 255 * d * 0.13;
+  });
+
+  function fill(c, put) {
     c.width = W;
     c.height = H;
     const ctx = c.getContext('2d');
     const img = ctx.createImageData(W, H);
-    for (let i = 0; i < a.length; i++) {
-      if (!a[i]) continue;
-      const [r, g, b, al] = paint(a[i]);
-      img.data[i * 4] = r;
-      img.data[i * 4 + 1] = g;
-      img.data[i * 4 + 2] = b;
-      img.data[i * 4 + 3] = al;
-    }
+    for (let i = 0; i < a.length; i++) if (a[i]) put(img.data, i * 4, a[i], i % W);
     ctx.putImageData(img, 0, 0);
   }
 }
