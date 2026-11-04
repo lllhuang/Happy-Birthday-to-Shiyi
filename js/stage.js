@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611040043';
-import { audio } from './audio.js?v=202611040043';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611040043';
-import { listenForBlow } from './blow.js?v=202611040043';
-import { HAND } from './hand.js?v=202611040043';
+import { CONTENT } from './content.js?v=202611040049';
+import { audio } from './audio.js?v=202611040049';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611040049';
+import { listenForBlow } from './blow.js?v=202611040049';
+import { HAND } from './hand.js?v=202611040049';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -367,12 +367,25 @@ export class Stage {
 
   _autoLaunch() {
     const w = this.fw.w || 300;
+    const n = (this._autoN = (this._autoN || 0) + 1);
     // 窗开着时，第 6、第 14 发换成爱心，混在普通烟花里
-    if (this._hearts && this._hearts[0] === ++this._autoN) {
+    if (this._hearts && this._hearts[0] === n) {
       this._hearts.shift();
       return this._heart();
     }
+    // 随机挑中的三发换成五角星
+    const si = this._stars ? this._stars.indexOf(n) : -1;
+    if (si >= 0) {
+      this._stars.splice(si, 1);
+      return this._star();
+    }
     this.fw.launch(w * (0.15 + Math.random() * 0.7));
+  }
+
+  // 五角星：比别的烟花小一圈，颜色随机；位置不固定，离窗边远一点
+  _star(delay) {
+    const w = this.fw.w, h = this.fw.h;
+    this.fw.launch(w * (0.22 + Math.random() * 0.56), { type: 'star', delay, y: h * (0.16 + Math.random() * 0.2) });
   }
 
   // 随手放的爱心：位置不固定，但离窗边远一点，不被裁掉
@@ -411,6 +424,12 @@ export class Stage {
     // 她提前放满 5 朵时，前面没轮到的爱心混进谢幕
     (this._hearts || []).forEach((_, i) => this._heart(t1 + 0.5 + i * 0.7));
     this._hearts = [];
+    // 五角星也一样：没轮到的混进谢幕，放在两边
+    (this._stars || []).forEach((_, i) => {
+      const w = this.fw.w, h = this.fw.h;
+      this.fw.launch(w * (i % 2 ? 0.72 + Math.random() * 0.12 : 0.16 + Math.random() * 0.12), { type: 'star', delay: t1 + 0.3 + i * 0.6, y: h * (0.16 + Math.random() * 0.14) });
+    });
+    this._stars = [];
     // 正中间这朵和最后几发一起放、一起消散，不单独亮出来，也不最后才散。
     // 爱心的火星停在原地、一直聚在一起，看着比散开的烟花亮得久，所以寿命和别的造型烟花一样短
     this.fw.launch(w * 0.5, { type: 'heart', delay: t1 + 1.6, y: h * 0.32, palette: HEART, hold: 1.8 });
@@ -430,6 +449,13 @@ export class Stage {
       this._mine = 0;
       this._autoN = 0;
       this._hearts = [6, 14];
+      // 三朵五角星：在第 2 到第 12 发里随机挑三发（避开爱心），早一点出现，她放得快也大多能看到
+      const slots = [2, 3, 4, 5, 7, 8, 9, 10, 11, 12];
+      this._stars = [];
+      while (this._stars.length < 3) {
+        const k = slots.splice(Math.floor(Math.random() * slots.length), 1)[0];
+        this._stars.push(k);
+      }
       this.fw.prepare(WORDS.map(([t]) => t));
       clearInterval(this._auto);
       this._auto = setInterval(() => this._autoLaunch(), 1300);

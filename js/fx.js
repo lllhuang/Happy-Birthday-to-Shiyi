@@ -120,6 +120,21 @@ function shapePoints(kind, gap = 6) {
     }
     return pts;
   }
+  if (kind === 'star') {
+    // 五角星的轮廓：外角半径 1、内角半径 0.382，一共 10 条边，点沿边均匀撒开；尖朝上
+    const v = [];
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 5, r = i % 2 ? 0.382 : 1;
+      v.push([Math.cos(a) * r, Math.sin(a) * r + 0.1]);
+    }
+    const pts = [];
+    const per = 7; // 每条边 7 个点，一共 70 个，和爱心一样多
+    for (let i = 0; i < 10; i++) {
+      const [x0, y0] = v[i], [x1, y1] = v[(i + 1) % 10];
+      for (let k = 0; k < per; k++) pts.push([x0 + ((x1 - x0) * k) / per, y0 + ((y1 - y0) * k) / per]);
+    }
+    return pts;
+  }
   // “25”保持原样；中文用页面已加载的悠哉字体，描边加粗，细笔画才不会漏点
   const cjk = kind !== '25';
   const W = cjk ? kind.length * 130 + 20 : 220;
@@ -248,7 +263,7 @@ export class Fireworks {
     this.ctx && this.ctx.clearRect(0, 0, this.w, this.h);
   }
 
-  // type: peony | chrys | willow | crackle | heart | 25 | text | special
+  // type: peony | chrys | willow | crackle | heart | star | 25 | text | special
   // text：拼出 text 里的字；hold：造型烟花亮多久（秒）
   launch(x, { y, type, palette, delay = 0, text, hold } = {}) {
     const go = () => {
@@ -318,12 +333,13 @@ export class Fireworks {
       this._burst(x, y, { n: 110, speed: 190, life: 1.7, colors: pal, trail: 0.35, width: 2, pop: 0.5 });
       this.onCrackle && this.timers.push(setTimeout(() => this.onCrackle(r), 850));
     }
-    if (type === 'heart' || type === '25' || type === 'text') {
+    if (type === 'heart' || type === 'star' || type === '25' || type === 'text') {
       let pts, scale;
       if (type === 'text') ({ pts, scale } = this._textShape(r.text));
       else {
         pts = this.shapes[type] || (this.shapes[type] = shapePoints(type));
-        scale = (Math.min(this.w, this.h) * (type === 'heart' ? 0.22 : 0.3)) / this.Z;
+        // 五角星比别的烟花小一圈
+        scale = (Math.min(this.w, this.h) * (type === 'heart' ? 0.22 : type === 'star' ? 0.15 : 0.3)) / this.Z;
       }
       const hold = r.hold || 2;
       // 造型不受粒子上限限制，缺几颗就看不出是什么形状了。火星停下后线长接近 0，dot 让它留成一个亮点
