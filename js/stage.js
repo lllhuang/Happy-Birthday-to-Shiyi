@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611040104';
-import { audio } from './audio.js?v=202611040104';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611040104';
-import { listenForBlow } from './blow.js?v=202611040104';
-import { HAND } from './hand.js?v=202611040104';
+import { CONTENT } from './content.js?v=202611040119';
+import { audio } from './audio.js?v=202611040119';
+import { sparkle, confetti, Fireworks } from './fx.js?v=202611040119';
+import { listenForBlow } from './blow.js?v=202611040119';
+import { HAND } from './hand.js?v=202611040119';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -281,14 +281,15 @@ export class Stage {
     });
   }
 
-  _hint(t, { belowSill = false } = {}) {
+  _hint(t, { belowSill = false, atCurtain = false } = {}) {
     const h = this.hint;
     h.classList.remove('show');
     clearTimeout(this._hintT);
     if (!t) return;
     this._hintT = setTimeout(() => {
       h.textContent = t;
-      this._placeHint(belowSill);
+      if (atCurtain) this._placeAtCurtain();
+      else this._placeHint(belowSill);
       h.classList.add('show');
     }, 250);
   }
@@ -314,6 +315,22 @@ export class Stage {
     // 只往下挪，不比样式表的位置高
     const top = Math.max(H - keep - th, Math.min(bottom + (free - th) / 2, H - keep / 2 - th));
     h.style.top = `${Math.max(bottom + 12, top)}px`;
+    h.style.bottom = 'auto';
+  }
+
+  // “该睡觉了”：字的中心线对齐窗帘的下沿。跟着窗户走，不看屏幕底边，
+  // 平板浏览器工具栏没收起时也不会落到看不见的地方。用镜头停下以后的位置算
+  _placeAtCurtain() {
+    const h = this.hint, wrap = this.wrap, win = this.win;
+    const cur = wrap.querySelector('.curtain');
+    h.style.top = '';
+    h.style.bottom = '';
+    if (!cur || cur.offsetParent !== wrap || h.offsetParent !== wrap.offsetParent) return;
+    const z = this._z || 1;
+    const cb = cur.offsetTop + cur.offsetHeight;
+    const oy = win.offsetTop + win.offsetHeight / 2;
+    const y = z === 1 ? wrap.offsetTop + cb : innerHeight / 2 + (cb - oy) * z;
+    h.style.top = `${y - h.offsetHeight / 2}px`;
     h.style.bottom = 'auto';
   }
 
@@ -516,7 +533,7 @@ export class Stage {
     this._zoom(false);
     await sleep(CURTAIN_LEAD);
     this.state = 'sleep-ask';
-    this._hint(C.night.sleep, { belowSill: true });
+    this._hint(C.night.sleep, { atCurtain: true });
   }
 
   _sleepNow() {
