@@ -118,6 +118,7 @@ export const CONTENT = {
   night: {
     open: '推开窗看看吧',
     tapSky: '点一下天空，放一朵你自己的烟花',
+    tapCount: '（{n}/5）', // 跟在上一句后面，她每放一朵加一
     sleep: '该睡觉了',
     curtain: '该睡觉了，拉上窗帘吧',
   },

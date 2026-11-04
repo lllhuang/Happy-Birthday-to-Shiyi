@@ -8,9 +8,9 @@
 <meta name="description" content="给冯诗意的生日梦境" />
 <meta property="og:title" content="祝冯诗意小朋友生日快乐！" />
 <meta property="og:description" content="今晚你会做一个很长的梦。" />
-<link rel="preload" href="assets/fonts/yozai.woff?v=202611040150" as="font" type="font/woff" crossorigin />
+<link rel="preload" href="assets/fonts/yozai.woff?v=202611040203" as="font" type="font/woff" crossorigin />
 <link rel="preload" href="assets/img/paper-texture.png" as="image" />
-<link rel="stylesheet" href="css/main.css?v=202611040150" />
+<link rel="stylesheet" href="css/main.css?v=202611040203" />
 </head>
 <body class="no-scroll">
 
@@ -26,6 +26,8 @@
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="6" cy="12" r="2.4" fill="currentColor"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/><circle cx="18" cy="12" r="2.4" fill="currentColor"/></svg>
 </button>
 <div id="chapters" hidden><div id="ch-bar" class="ch-bar"></div></div>
+<!-- 信写完以后出现在右上角、“⋯”按钮左边 -->
+<button id="replay" class="sound-btn replay-btn" data-t="letter.replay"></button>
 <button id="resume" hidden></button>
 
 <!-- 定时锁 -->
@@ -373,6 +375,9 @@
     <p class="room-hint" id="room-hint"></p>
     <div class="dark" id="room-dark" aria-hidden="true"></div>
     <div class="dawn" id="dawn" aria-hidden="true"></div>
+    <!-- 丁达尔效应：从窗帘缝斜着照进屋里的光柱，和光柱里飘着的浮尘 -->
+    <div class="rays" id="rays" aria-hidden="true"><i></i></div>
+    <canvas class="motes" id="motes" aria-hidden="true"></canvas>
 
     <!-- 时钟 -->
     <div class="clock" id="clock" hidden>
@@ -435,7 +440,6 @@
         <p class="sign w" data-t="letter.sign"></p>
         <p class="ldate w" data-t="letter.date"></p>
       </div>
-      <button class="link" id="replay" data-t="letter.replay"></button>
     </div>
   </div>
 </section>
@@ -457,6 +461,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="bloom" id="bloom" aria-hidden="true"></div>
 
-<script type="module" src="js/main.js?v=202611040150"></script>
+<script type="module" src="js/main.js?v=202611040203"></script>
 </body>
 </html>

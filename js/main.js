@@ -1,10 +1,10 @@
-import { CONTENT } from './content.js?v=202611040150';
-import { audio } from './audio.js?v=202611040150';
-import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040150';
-import { Stage } from './stage.js?v=202611040150';
-import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040150';
-import { playTransition } from './transition.js?v=202611040150';
-import { paintBrush } from './brush.js?v=202611040150';
+import { CONTENT } from './content.js?v=202611040203';
+import { audio } from './audio.js?v=202611040203';
+import { sparkle, floatNote, reduceMotion, Embers, Glints } from './fx.js?v=202611040203';
+import { Stage } from './stage.js?v=202611040203';
+import { drawHead, drawStem, addBloom, LilyField } from './lily.js?v=202611040203';
+import { playTransition } from './transition.js?v=202611040203';
+import { paintBrush } from './brush.js?v=202611040203';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -289,7 +289,13 @@ function renderCloud(p) {
     b.style.opacity = o;
     b.style.transform = `translateY(${(1 - o) * 10}px)`;
   });
-  const ty = (p0, p1, x) => lerp(1.05, -0.75, clamp((p - p0) / (p1 - p0))) * vh;
+  // 照片没轮到时停在屏幕下面等着。平板、手机浏览器收起工具栏以后屏幕变高（innerHeight 比 vh 大），
+  // 要按变高以后的高度停，否则三张会一样高地露在屏幕底部
+  const H = Math.max(vh, innerHeight);
+  const ty = (p0, p1) => {
+    const k = clamp((p - p0) / (p1 - p0));
+    return lerp(1.05 * H, -0.75 * vh, k);
+  };
   polTrio.style.transform = `translate3d(0,${ty(0.1, 0.56)}px,0) rotate(${lerp(9, 4, p)}deg)`;
   polRei.style.transform = `translate3d(0,${ty(0.3, 0.72)}px,0) rotate(${lerp(-12, -6, p)}deg)`;
   polFamily.style.transform = `translate3d(0,${ty(0.46, 0.86)}px,0) rotate(${lerp(-4, -8, p)}deg)`;
@@ -303,6 +309,15 @@ const nextHint = $('.next-hint');
 const room = $('#room');
 const glints = new Glints($('#glints'));
 let musicSeen = false;
+// 琴房的章节锁：点过吉他或钢琴以前，往下最多滑到 MUSIC_LOCK（琴房完整露出、还没开始淡出），
+// 也不出“下滑继续探索”；点过一次就放开
+let musicTried = false;
+const MUSIC_LOCK = 0.6;
+function tryMusic() {
+  if (musicTried) return;
+  musicTried = true;
+  onScroll();
+}
 
 function syncGlints() {
   glints.set(musicSeen && pianoPanel.hidden);
@@ -325,7 +340,7 @@ function renderMusic(p) {
   quote.style.transform = `translateY(${(1 - a) * 24 - out * 30}px)`;
   instruments.style.opacity = a * (1 - out * 0.8);
   instruments.style.transform = `translateY(${(1 - a) * 50}px)`;
-  nextHint.style.opacity = clamp((p - 0.72) / 0.08) * 0.75 * (1 - clamp((p - 0.95) / 0.05));
+  nextHint.style.opacity = musicTried ? clamp((p - 0.72) / 0.08) * 0.75 * (1 - clamp((p - 0.95) / 0.05)) : 0;
   // 吉他响着往下滑：声音跟着渐弱，滑到彼岸花时停下；中途滑回来，声音也回来
   // 待在琴房里一直是满音量，快离开时才渐弱；线性降低听不出来，所以用曲线
   songLevel = Math.pow(1 - clamp((p - 0.58) / 0.36), 1.8);
@@ -392,6 +407,7 @@ export function stopSong({ fade = false } = {}) {
 
 guitar.addEventListener('click', () => {
   audio.unlock();
+  tryMusic();
   if (songOn) {
     stopSong();
   } else startSong();
@@ -583,6 +599,7 @@ addEventListener('keyup', (e) => releaseId('kb' + e.code));
 let pianoReturn = 0.4;
 function openPiano() {
   audio.unlock();
+  musicTried = true;
   pianoReturn = progress(musicSec);
   if (bgmEl && !bgmEl.paused) bgmEl.pause();
   audio.loadPiano();
@@ -767,6 +784,11 @@ function onScroll() {
   ticking = true;
   requestAnimationFrame(() => {
     ticking = false;
+    // 琴房没点过吉他或钢琴：滑到锁定的位置就停住
+    if (!musicTried && entered && !$('#dream').hidden) {
+      const lim = musicSec.offsetTop + (musicSec.offsetHeight - document.documentElement.clientHeight) * MUSIC_LOCK;
+      if (scrollY > lim + 1) scrollTo(0, lim);
+    }
     const y = scrollY;
     paintBg(y);
     const cp = progress(cloudSec), mp = progress(musicSec);
@@ -1060,6 +1082,7 @@ function boot() {
 
 async function jump(where, { top = false } = {}) {
   const dreamTargets = { cloud: cloudSec, music: musicSec, ink: inkSec };
+  if (where !== 'cloud' && where !== 'music') musicTried = true; // 直接跳到后面的章节，说明琴房已经过了
   if (dreamTargets[where]) {
     await enterDream({ instant: true });
     measure();

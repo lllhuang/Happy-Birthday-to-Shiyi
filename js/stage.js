@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611040150';
-import { audio } from './audio.js?v=202611040150';
-import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040150';
-import { listenForBlow } from './blow.js?v=202611040150';
-import { HAND } from './hand.js?v=202611040150';
+import { CONTENT } from './content.js?v=202611040203';
+import { audio } from './audio.js?v=202611040203';
+import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040203';
+import { listenForBlow } from './blow.js?v=202611040203';
+import { HAND } from './hand.js?v=202611040203';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -81,7 +81,7 @@ export class Stage {
   }
 
   _lightButtons(on) {
-    ['#sound', '#chapters-btn'].forEach((s) => $(s).classList.toggle('light', on));
+    ['#sound', '#chapters-btn', '#replay'].forEach((s) => $(s).classList.toggle('light', on));
   }
 
   begin(where) {
@@ -462,8 +462,9 @@ export class Stage {
       this._hint('');
       await sleep(900);
       this.state = 'open';
-      this._hint(C.night.tapSky, { inWindow: true });
       this._mine = 0;
+      // 提示常驻：从出现开始一直在，后面跟着计数（0/5），她每放一朵加一，放满或者时间到了才慢慢淡出
+      this._hint(this._tapSkyText(), { inWindow: true });
       this._autoN = 0;
       this._hearts = [6, 14];
       // 三朵五角星：在第 2 到第 12 发里随机挑三发（避开爱心），早一点出现，她放得快也大多能看到
@@ -491,12 +492,14 @@ export class Stage {
       const y = Math.min((e.clientY - r.top) / z - 10, this.fw.h * 0.62);
       this.fw.launch(x, { y, type: 'special' });
       this._mine++;
-      if (this._mine === 1) this._hint('');
+      this.hint.textContent = this._tapSkyText();
       if (this._mine >= 5) {
         clearTimeout(this._t30);
         this.state = 'mine-done';
-        // 等她的第五朵炸完，接着放最后一波
-        await sleep(2600);
+        // 让“（5/5）”停一会儿再慢慢淡出；等她的第五朵炸完、提示淡完，接着放最后一波
+        await sleep(700);
+        await this._fadeHint(1800);
+        await sleep(100);
         this._finaleThenSleep();
       }
       return;
@@ -506,11 +509,29 @@ export class Stage {
     if (this.state === 'm-closed') this._openMorning();
   }
 
+  _tapSkyText() {
+    return C.night.tapSky + C.night.tapCount.replace('{n}', Math.min(5, this._mine || 0));
+  }
+
+  // 提示慢慢淡出，淡完再清掉（盖过样式表里一明一暗的呼吸动画）
+  async _fadeHint(ms) {
+    const h = this.hint;
+    if (!h.classList.contains('show')) return;
+    clearTimeout(this._hintT);
+    const from = +getComputedStyle(h).opacity;
+    const a = h.animate([{ opacity: from }, { opacity: 0 }], { duration: ms, easing: 'ease-in-out', fill: 'forwards' });
+    await a.finished.catch(() => {});
+    h.classList.remove('show');
+    h.style.opacity = 0;
+    a.cancel();
+    h.style.opacity = '';
+  }
+
   // 情况一：30 秒到了，她还没放满 5 朵 → 自动放最后一波，然后提示拉窗帘
   async _timeUp() {
     if (this.state !== 'open') return;
     this.state = 'finale';
-    this._hint('');
+    this._fadeHint(1800); // 没放满也一样，计数停在那里慢慢淡出，最后一波同时开始
     clearInterval(this._auto);
     this._finale();
     await sleep(5800 + WORDS.length * WORD_GAP * 1000);
@@ -677,26 +698,71 @@ export class Stage {
     }
   }
 
-  // 窗帘中间那道光：每一帧量两片窗帘内侧的边，光正好填在两片窗帘中间的缝里，
-  // 窗帘拉到哪里光就到哪里。缝刚拉开时最亮，窗帘拉开、屋里亮起来以后慢慢淡掉
+  // 窗帘中间那道光和丁达尔光柱：先算出窗帘全拉开时的缝，按它摆好；之后每帧量两片窗帘内侧的边，
+  // 只改横向缩放（交给显卡合成，不重画），窗帘拉到哪里光就到哪里。光柱里飘着浮尘，屋里亮起来以后慢慢看不见
   _dawnLight() {
-    const d = $('#dawn'), cl = $('#cur-l'), cr = $('#cur-r');
-    const T = 5600, t0 = performance.now();
+    const d = $('#dawn'), rays = $('#rays'), mc = $('#motes'), cl = $('#cur-l'), cr = $('#cur-r');
+    const T = 6000, TR = 9500, t0 = performance.now();
     cancelAnimationFrame(this._dawnRaf);
     const ss = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+    const w = this.win.getBoundingClientRect();
+    // 全拉开时窗帘只剩 26% 宽（见样式表 .curtain），左片左边、右片右边不动
+    const lr = cl.getBoundingClientRect(), rr = cr.getBoundingClientRect();
+    const Lo = lr.left + cl.offsetWidth * 0.26, Ro = rr.right - cr.offsetWidth * 0.26, cx = (Lo + Ro) / 2, G = Ro - Lo;
+    const H = this.room.clientHeight;
+    const top = w.top + w.height * 0.04, bot = H;
+    Object.assign(d.style, { left: `${Lo}px`, width: `${G}px`, top: `${w.top}px`, height: `${w.height * 1.22}px`, transformOrigin: '50% 0' });
+    // 光柱：上边就是缝，往下越照越宽，整体往左下斜（太阳在窗外右上方）
+    const shift = w.width * 0.3, spread = w.width * 0.18 + G * 0.35;
+    const P = [[Lo, top], [Ro, top], [Ro - shift + spread * 0.3, bot], [Lo - shift - spread, bot]];
+    rays.style.clipPath = `polygon(${P.map(([x, y]) => `${x}px ${y}px`).join(',')})`;
+    rays.style.transformOrigin = `${cx}px ${top}px`;
+    const m = `linear-gradient(rgba(0,0,0,.1) ${top}px, rgba(0,0,0,.28) ${w.bottom - w.height * 0.2}px, #000 ${w.bottom + 40}px, transparent ${bot}px)`;
+    rays.style.webkitMaskImage = rays.style.maskImage = m;
+    // 浮尘：画布只铺光柱的范围，1 倍分辨率；只在当前光柱里画，亮度跟着光柱上淡下浓
+    const bx = Math.floor(Math.min(...P.map((p) => p[0]))), bw = Math.ceil(Math.max(...P.map((p) => p[0]))) - bx;
+    Object.assign(mc.style, { left: `${bx}px`, top: `${top}px`, width: `${bw}px`, height: `${bot - top}px` });
+    mc.width = Math.max(1, bw); mc.height = Math.max(1, Math.round(bot - top));
+    const ctx = mc.getContext('2d');
+    const fade = (y) => (y < w.bottom - top ? 0.2 + 0.6 * (y / (w.bottom - top)) : 1 - (y - (w.bottom - top)) / (bot - w.bottom));
+    const motes = Array.from({ length: Math.round(Math.min(60, (bw * (bot - top)) / 7000)) }, () => ({
+      u: Math.random(), v: Math.random(), r: 0.6 + Math.random() * 1.5,
+      vu: (Math.random() - 0.5) * 0.02, vv: (Math.random() - 0.3) * 0.012, ph: Math.random() * 6.3, sp: 0.6 + Math.random() * 1.4,
+    }));
+    let last = t0;
     const frame = (now) => {
-      const t = now - t0;
-      const w = this.win.getBoundingClientRect();
+      const t = now - t0, dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
       const L = cl.getBoundingClientRect().right, R = cr.getBoundingClientRect().left;
-      const gap = Math.max(0, R - L);
-      const g = gap / w.width;
-      d.style.left = `${L}px`;
-      d.style.width = `${gap}px`;
-      d.style.top = `${w.top}px`;
-      d.style.height = `${w.height * 1.22}px`;
-      d.style.opacity = (0.85 * Math.min(1, g * 4) * (1 - ss(0.55, 1, t / T))).toFixed(3);
-      if (t < T) this._dawnRaf = requestAnimationFrame(frame);
-      else d.style.opacity = 0;
+      const g = Math.max(0, Math.min(1, (R - L) / G));
+      const k = Math.max(0.001, g).toFixed(4);
+      d.style.transform = `scaleX(${k})`;
+      rays.style.transform = `scaleX(${k})`;
+      const open = Math.min(1, ((R - L) / w.width) * 4);
+      d.style.opacity = (0.55 * open * (1 - ss(0.5, 1, t / T))).toFixed(3);
+      const ro = Math.min(1, ((R - L) / w.width) * 3) * (1 - ss(0.55, 1, t / TR));
+      rays.style.opacity = (0.9 * ro).toFixed(3);
+      // 浮尘：u 是在光柱里从左到右的比例，v 是从上到下的比例；跟着光柱的宽度走
+      ctx.clearRect(0, 0, mc.width, mc.height);
+      if (ro > 0.01) {
+        for (const p of motes) {
+          p.u = (p.u + p.vu * dt + 1) % 1;
+          p.v = (p.v + p.vv * dt + 1) % 1;
+          const y = p.v * (bot - top);
+          const xl = Lo - (shift + spread) * p.v, xr = Ro + (spread * 0.3 - shift) * p.v; // 这一高度上光柱全开时的左右边
+          const half = ((xr - xl) / 2) * g;
+          const mid = cx + ((xl + xr) / 2 - cx) * g; // 横向缩放以后这一高度的中心
+          const x = mid - half + p.u * half * 2 - bx;
+          const a = (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(p.ph + (t / 1000) * p.sp))) * fade(y) * ro;
+          if (a < 0.02) continue;
+          ctx.fillStyle = `rgba(255,244,220,${(a * 0.85).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(x, y, p.r, 0, 6.283);
+          ctx.fill();
+        }
+      }
+      if (t < TR) this._dawnRaf = requestAnimationFrame(frame);
+      else { d.style.opacity = rays.style.opacity = 0; ctx.clearRect(0, 0, mc.width, mc.height); }
     };
     this._dawnRaf = requestAnimationFrame(frame);
   }
@@ -850,6 +916,9 @@ export class Stage {
     const env = $('#env');
     const paper = $('#letter .paper');
     $('#env-hint').hidden = true;
+    // 信封先从屏幕正中慢慢下移，腾出上面的地方，停稳了再拆
+    L.classList.add('lowered');
+    await sleep(850);
     const E = env.getBoundingClientRect();
     sparkle(E.left + E.width / 2, E.top + E.height * 0.57, { color: '#A9CBF2', count: 10, spread: 90 });
 
