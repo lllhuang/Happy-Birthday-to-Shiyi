@@ -1,6 +1,6 @@
 /* 字体：悠哉字体（正文，接近她手机上的字体）+ 马善政毛笔楷书（水墨段），都是 OFL 开源字体，已按用到的字裁剪 */
-@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611040119') format('woff'); font-display: swap; }
-@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611040119') format('woff'); font-display: swap; }
+@font-face { font-family: 'Yozai'; src: url('../assets/fonts/yozai.woff?v=202611040142') format('woff'); font-display: swap; }
+@font-face { font-family: 'Brush'; src: url('../assets/fonts/brush.woff?v=202611040142') format('woff'); font-display: swap; }
 
 :root {
   /* 配色取自她的手办柜和被窝：00 蓝、08 粉、02 红、白底小蓝星 */
@@ -495,23 +495,21 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 .window { position: relative; width: 100%; height: var(--winH); border: 10px solid #F4F2F7; border-radius: 4px; box-shadow: 0 0 0 1px rgba(0,0,0,.15), 0 20px 50px rgba(0,0,0,.35); background: #0B1030; perspective: calc(var(--winH) * 3.2); cursor: pointer; }
 #st-room.morning .window { border-color: #FFFFFF; box-shadow: 0 0 0 1px rgba(46,58,99,.08), 0 20px 50px rgba(46,58,99,.18); }
 .outside { position: absolute; inset: 0; overflow: hidden; }
-.sky { position: absolute; inset: 0; background: linear-gradient(180deg, #070B24, #1C2350 70%, #2E2A5E); transition: opacity 1.5s; }
+/* 夜空到窗户中间渐变成城堡图天空的颜色（#02062B），两张图接得上 */
+.sky { position: absolute; inset: 0; background: linear-gradient(180deg, #0A0E2C, #03072C 46%, #02062B); transition: opacity 1.5s; }
 #st-room.morning .sky { background: linear-gradient(180deg, #A9DDF5, #D8F1F6 58%, #FFF5DF); }
 /* 农历廿七的月亮：残月，细细一弯，亮的一边朝左 */
 .moon27 { position: absolute; width: 15%; min-width: 46px; right: 16%; top: 9%; overflow: visible; transform: rotate(-24deg); filter: drop-shadow(0 0 10px rgba(255,240,200,.6)); transition: opacity 1.2s; }
 .sun { position: absolute; width: 16%; aspect-ratio: 1; right: 18%; top: 9%; border-radius: 50%; background: #FFEDB0; border: 1px solid rgba(138,120,104,.55); box-shadow: 0 0 34px 12px rgba(255,236,176,.7); opacity: 0; transform: translateY(170%); transition: opacity 5s, transform 6s cubic-bezier(.2,.6,.3,1); }
 #st-room.morning .moon27 { opacity: 0; }
 #st-room.morning .sun { opacity: 1; transform: none; }
-.roofs { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 14%; fill: #05071A; transition: opacity 1s; }
-/* 城堡剪影：按原比例放在窗户底部正中，占窗高一半多；前面压一排矮屋顶当城下的小镇 */
-.castle { position: absolute; left: 0; right: 0; bottom: 4%; width: 100%; height: 56%; overflow: visible; transition: opacity 1s; pointer-events: none; }
-.castle .gate { fill: #04061A; }
-.castle .flag { fill: #2A2F6E; }
-.castle .lit { fill: #FFD58A; filter: drop-shadow(0 0 2px rgba(255,200,120,.9)); animation: castleLit 4.5s ease-in-out infinite; }
-@keyframes castleLit { 0%, 100% { opacity: .95; } 50% { opacity: .55; } }
+/* 城堡：占窗户下半部分，按 cover 铺满、底边对齐；上沿淡进天空。平时压暗，烟花炸开时上面那层画布把它照亮。
+   遮罩在外层，画布的“滤色”只和城堡图混，不会照亮后面的天 */
+.castle { position: absolute; left: 0; right: 0; bottom: 0; height: 52%; transition: opacity 1s; pointer-events: none; -webkit-mask-image: linear-gradient(transparent, #000 14%); mask-image: linear-gradient(transparent, #000 14%); }
+.castle-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; filter: brightness(.62) saturate(.92); }
+.castle-light { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; }
 #st-room.morning .castle { opacity: 0; }
 .hills { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; opacity: 0; transition: opacity 3s ease-in; }
-#st-room.morning .roofs { opacity: 0; }
 #st-room.morning .hills { opacity: 1; }
 
 /* 草地三只角色：绕脚底等比例缩放，整体退到花朵后方；U 更靠远景。 */
@@ -585,7 +583,8 @@ img { display: block; -webkit-user-drag: none; pointer-events: none; }
 /* 天亮：窗帘慢慢拉开，光从缝里进来，屋里跟着一点点亮 */
 #st-room.morning .dark { transition: opacity 5.2s cubic-bezier(.5,0,.7,1); }
 #st-room.morning .curtain { transition-duration: 4s; transition-timing-function: cubic-bezier(.45,0,.3,1); }
-.dawn { position: absolute; z-index: 7; opacity: 0; pointer-events: none; background: linear-gradient(90deg, rgba(255,226,180,0), rgba(255,236,200,.75) 28%, rgba(255,250,235,.95) 50%, rgba(255,236,200,.75) 72%, rgba(255,226,180,0)); filter: blur(14px); }
+/* 窗帘缝里透进来的光：位置和宽度由脚本每帧跟着窗帘设；往下多出一截，漫到窗台下面再淡掉 */
+.dawn { position: absolute; z-index: 7; opacity: 0; pointer-events: none; background: linear-gradient(90deg, rgba(255,232,190,.55), rgba(255,248,230,.95) 50%, rgba(255,232,190,.55)); filter: blur(12px); -webkit-mask-image: linear-gradient(#000 76%, transparent); mask-image: linear-gradient(#000 76%, transparent); will-change: left, width, opacity; }
 .sky-dawn { position: absolute; inset: 0; opacity: 0; pointer-events: none; background: linear-gradient(180deg, #4A4A8E, #C78AA6 58%, #FFC48E); transition: opacity 6s ease-in; }
 #st-room.dawning .sky-dawn { opacity: 1; transition: none; }
 

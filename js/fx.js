@@ -632,3 +632,91 @@ export class Embers {
     ctx.globalCompositeOperation = 'source-over';
   }
 }
+
+// 烟花照亮窗外的城堡。城堡图平时压暗；每朵烟花炸开时在炸点放一盏会熄灭的彩色灯，
+// 每帧把这些灯画成一张光照图，乘上城堡图，再用“滤色”叠在压暗的城堡上：被照到的地方亮起来、带上烟花的颜色，
+// 离炸点越远越暗。没有灯的时候不画
+export class CastleLight {
+  constructor(box, img, canvas) {
+    Object.assign(this, { box, img, canvas, Z: 1 });
+    this.ctx = canvas.getContext('2d');
+    this.map = document.createElement('canvas');
+    this.mctx = this.map.getContext('2d');
+    this.lights = [];
+    this.raf = 0;
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  }
+
+  resize() {
+    const f = fitCanvas(this.canvas, 1.5, this.Z);
+    this.ctx = f.ctx;
+    this.w = f.w;
+    this.h = f.h;
+    // 光照图本来就是大片的柔光，四分之一大小就够
+    this.map.width = Math.max(1, Math.round(this.w / 4));
+    this.map.height = Math.max(1, Math.round(this.h / 4));
+  }
+
+  zoom(z) {
+    if (Math.abs(z - this.Z) < 0.01) return;
+    this.Z = z;
+    this.resize();
+  }
+
+  // x、y 是烟花画布里的坐标（窗户里面，排版尺寸）；power 0 到 1；tau 是熄灭的快慢（秒）
+  add(x, y, colors, { power = 0.6, tau = 0.6 } = {}) {
+    if (!this.w) this.resize();
+    const [r, g, b] = mixLight(colors);
+    this.lights.push({ x, y: y - this.box.offsetTop, r, g, b, power, tau, t0: performance.now() });
+    if (!this.raf) this.raf = requestAnimationFrame((t) => this._frame(t));
+  }
+
+  clear() {
+    this.lights = [];
+    this.ctx.clearRect(0, 0, this.w, this.h);
+  }
+
+  _frame(now) {
+    this.raf = 0;
+    const { ctx, w, h, img } = this;
+    const m = this.mctx, mw = this.map.width, mh = this.map.height, k = mw / w;
+    // 亮度：0.07 秒内亮到顶，然后按指数慢慢熄灭
+    this.lights = this.lights.filter((l) => {
+      const t = (now - l.t0) / 1000;
+      l.e = t < 0.07 ? t / 0.07 : Math.exp(-(t - 0.07) / l.tau);
+      return l.e > 0.015;
+    });
+    ctx.clearRect(0, 0, w, h);
+    if (!this.lights.length || !img.complete || !img.naturalWidth) return;
+    m.globalCompositeOperation = 'source-over';
+    m.fillStyle = '#000';
+    m.fillRect(0, 0, mw, mh);
+    m.globalCompositeOperation = 'lighter';
+    for (const l of this.lights) {
+      const R = Math.max(w, h) * (0.6 + 0.45 * l.power) * k;
+      const a = Math.min(1, l.e * l.power * 1.35);
+      const gr = m.createRadialGradient(l.x * k, l.y * k, 0, l.x * k, l.y * k, R);
+      gr.addColorStop(0, `rgba(${l.r},${l.g},${l.b},${a})`);
+      gr.addColorStop(0.45, `rgba(${l.r},${l.g},${l.b},${a * 0.78})`);
+      gr.addColorStop(1, `rgba(${l.r},${l.g},${l.b},0)`);
+      m.fillStyle = gr;
+      m.fillRect(0, 0, mw, mh);
+    }
+    // 城堡图按 object-fit: cover、底边对齐画上去，和下面那张对齐
+    const s = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+    const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(img, (w - dw) / 2, h - dh, dw, dh);
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.drawImage(this.map, 0, 0, w, h);
+    ctx.globalCompositeOperation = 'source-over';
+    this.raf = requestAnimationFrame((t) => this._frame(t));
+  }
+}
+
+// 烟花的两种颜色取平均，再往白色靠一点：照在墙上的光没有火星本身那么艳
+function mixLight(colors) {
+  const c = colors.map((x) => [1, 3, 5].map((i) => parseInt(x.slice(i, i + 2), 16)));
+  return [0, 1, 2].map((j) => Math.round((c.reduce((s, v) => s + v[j], 0) / c.length) * 0.65 + 255 * 0.35));
+}

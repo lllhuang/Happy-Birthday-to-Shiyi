@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611040119';
-import { audio } from './audio.js?v=202611040119';
-import { sparkle, confetti, Fireworks } from './fx.js?v=202611040119';
-import { listenForBlow } from './blow.js?v=202611040119';
-import { HAND } from './hand.js?v=202611040119';
+import { CONTENT } from './content.js?v=202611040142';
+import { audio } from './audio.js?v=202611040142';
+import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040142';
+import { listenForBlow } from './blow.js?v=202611040142';
+import { HAND } from './hand.js?v=202611040142';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -14,7 +14,6 @@ const HEART = ['#F2A7B8', '#FFE3EA'];
 const WORDS = [['冯诗意', ['#FFD58A', '#FFF4D6']], ['生日快乐！', ['#8FD3FF', '#F2F8FF']]];
 const WORD_GAP = 3.4;
 const ZOOM_OUT = 4200; // 镜头拉远用多久（毫秒）
-const CURTAIN_LEAD = 2200; // 拉远进行到这时开始关窗拉窗帘，两者重叠
 
 // 贺卡换成手写字：打印字照常排版、设成透明，只用来占位；每个字上叠一格手写字（拼在一张图里）。
 // 破折号“——”是两个字符，手写稿里是一笔，叠在第一个上、占两格
@@ -67,6 +66,7 @@ export class Stage {
       onBurst: (r) => this._burst(r),
       onCrackle: (r, big) => audio.crackle({ pan: r.pan, n: big ? 40 : 22, spread: big ? 1.4 : 0.9 }),
     });
+    this.light = new CastleLight($('#castle'), $('#castle-img'), $('#castle-light'));
     this._bindCake();
     this._bindRoom();
     this._buildTicks();
@@ -281,7 +281,8 @@ export class Stage {
     });
   }
 
-  _hint(t, { belowSill = false, atCurtain = false } = {}) {
+  // inWindow：镜头推近时放在窗户里面；atCurtain：镜头拉远停下以后放在窗帘下沿；都不给就照样式表
+  _hint(t, { inWindow = false, atCurtain = false } = {}) {
     const h = this.hint;
     h.classList.remove('show');
     clearTimeout(this._hintT);
@@ -289,37 +290,27 @@ export class Stage {
     this._hintT = setTimeout(() => {
       h.textContent = t;
       if (atCurtain) this._placeAtCurtain();
-      else this._placeHint(belowSill);
+      else this._placeInWindow(inWindow);
       h.classList.add('show');
     }, 250);
   }
 
-  // 把提示放在窗台和屏幕底边中间，免得压在白色窗框上。窗户按 vh 排，
-  // 手机浏览器的 vh 比看得见的屏幕高，窗台会比样式表预想的更靠下。
-  // 用镜头停下以后的位置算；窗户占满整屏、下面没有空位时，照样式表放在窗户里
-  _placeHint(belowSill) {
-    const h = this.hint, wrap = this.wrap, win = this.win;
-    const sill = wrap.querySelector('.sill');
+  // 镜头推近时窗户占满屏幕的宽或高，窗外的地方可能在屏幕外面，提示放在窗户里面：
+  // 字的中心线在窗户底边往上 9% 窗高的地方（横屏时和样式表的位置差不多）。用推近以后的位置算
+  _placeInWindow(on) {
+    const h = this.hint, win = this.win;
     h.style.top = '';
     h.style.bottom = '';
-    if (!belowSill || !sill || sill.offsetParent !== wrap || h.offsetParent !== wrap.offsetParent) return;
-    const H = h.offsetParent.clientHeight;
+    if (!on) return;
     const z = this._z || 1;
-    const sb = sill.offsetTop + sill.offsetHeight;
-    const oy = win.offsetTop + win.offsetHeight / 2;
-    const bottom = z === 1 ? wrap.offsetTop + sb : innerHeight / 2 + (sb - oy) * z;
-    const th = h.offsetHeight;
-    const keep = parseFloat(getComputedStyle(h).bottom) || 0;
-    const free = H - bottom;
-    if (free < th + 24) return;
-    // 只往下挪，不比样式表的位置高
-    const top = Math.max(H - keep - th, Math.min(bottom + (free - th) / 2, H - keep / 2 - th));
-    h.style.top = `${Math.max(bottom + 12, top)}px`;
+    const H = win.offsetHeight * z;
+    const bottom = z === 1 ? this.wrap.offsetTop + win.offsetTop + win.offsetHeight : innerHeight / 2 + H / 2;
+    h.style.top = `${bottom - H * 0.09 - h.offsetHeight / 2}px`;
     h.style.bottom = 'auto';
   }
 
-  // “该睡觉了”：字的中心线对齐窗帘的下沿。跟着窗户走，不看屏幕底边，
-  // 平板浏览器工具栏没收起时也不会落到看不见的地方。用镜头停下以后的位置算
+  // 两句“该睡觉了”：字的中心线对齐窗帘的下沿。跟着窗户走，不看屏幕底边，
+  // 平板浏览器工具栏没收起时也不会落到看不见的地方。镜头拉远停下以后才放
   _placeAtCurtain() {
     const h = this.hint, wrap = this.wrap, win = this.win;
     const cur = wrap.querySelector('.curtain');
@@ -344,7 +335,7 @@ export class Stage {
       this._z = 1;
       wrap.style.transition = `transform ${ZOOM_OUT}ms cubic-bezier(.37,0,.63,1)`;
       wrap.style.transform = '';
-      setTimeout(() => this._z === 1 && this.fw.zoom(1), ZOOM_OUT + 100);
+      setTimeout(() => { if (this._z === 1) { this.fw.zoom(1); this.light.zoom(1); } }, ZOOM_OUT + 100);
       return;
     }
     wrap.style.transition = '';
@@ -355,6 +346,7 @@ export class Stage {
     wrap.style.transformOrigin = `${ox}px ${oy}px`;
     wrap.style.transform = `translateX(-50%) translate(${innerWidth / 2 - cx}px, ${innerHeight / 2 - cy}px) scale(${z})`;
     this.fw.zoom(z);
+    this.light.zoom(z);
   }
 
   _prepNight() {
@@ -369,6 +361,7 @@ export class Stage {
     this.el.hidden = false;
     audio.setWindowOpen(false);
     this.fw.resize();
+    this.light.resize();
     this.fw.start();
     this.state = 'closed';
     clearInterval(this._auto);
@@ -413,6 +406,13 @@ export class Stage {
 
   _burst(r) {
     audio.boom({ pan: r.pan, big: r.special });
+    // 照亮城堡：她自己放的大烟花最亮、灭得最慢；造型烟花亮得久；柳是金色的，烧得久
+    const shaped = ['heart', 'star', '25', 'text'].includes(r.type);
+    const glass = this.win.classList.contains('open') ? 1 : 0.55; // 关着窗时远处的烟花隔着玻璃，照得弱一些
+    this.light.add(r.x, r.y, r.type === 'willow' ? ['#FFD58A', '#FFB65C'] : r.pal, {
+      power: (r.special ? 1 : shaped ? 0.7 : 0.6) * glass,
+      tau: r.special ? 1.1 : shaped ? 0.9 : r.type === 'willow' ? 0.9 : 0.55,
+    });
     if (!this.win.classList.contains('open')) return;
     const f = $('#wall-flash');
     f.style.background = `radial-gradient(60% 50% at 50% 35%, ${r.pal[0]}, transparent)`;
@@ -462,7 +462,7 @@ export class Stage {
       this._hint('');
       await sleep(900);
       this.state = 'open';
-      this._hint(C.night.tapSky, { belowSill: true });
+      this._hint(C.night.tapSky, { inWindow: true });
       this._mine = 0;
       this._autoN = 0;
       this._hearts = [6, 14];
@@ -514,11 +514,12 @@ export class Stage {
     clearInterval(this._auto);
     this._finale();
     await sleep(5800 + WORDS.length * WORD_GAP * 1000);
-    // 烟花放完，镜头慢慢拉远，拉到一半出现拉窗帘的提示
+    // 烟花放完，镜头慢慢拉远，停下以后在窗帘下沿出现拉窗帘的提示
     this._zoom(false);
-    await sleep(CURTAIN_LEAD);
+    await sleep(ZOOM_OUT);
+    if (this.state !== 'finale') return;
     this.state = 'curtain';
-    this._hint(C.night.curtain, { belowSill: true });
+    this._hint(C.night.curtain, { atCurtain: true });
   }
 
   // 情况二：30 秒内放满 5 朵 → 接着放最后一波；所有烟花放完、镜头拉远时才提示“该睡觉了”，
@@ -531,7 +532,8 @@ export class Stage {
     this._finale();
     await sleep(6200 + WORDS.length * WORD_GAP * 1000);
     this._zoom(false);
-    await sleep(CURTAIN_LEAD);
+    await sleep(ZOOM_OUT);
+    if (this.state !== 'finale') return;
     this.state = 'sleep-ask';
     this._hint(C.night.sleep, { atCurtain: true });
   }
@@ -675,20 +677,28 @@ export class Stage {
     }
   }
 
-  // 窗帘中间那道光：先是一条缝，跟着窗帘一起变宽，再散开
+  // 窗帘中间那道光：每一帧量两片窗帘内侧的边，光正好填在两片窗帘中间的缝里，
+  // 窗帘拉到哪里光就到哪里。缝刚拉开时最亮，窗帘拉开、屋里亮起来以后慢慢淡掉
   _dawnLight() {
-    const r = this.win.getBoundingClientRect();
-    const d = $('#dawn');
-    Object.assign(d.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
-    d.animate(
-      [
-        { opacity: 0, transform: 'scaleX(.04)' },
-        { opacity: 0.85, transform: 'scaleX(.3)', offset: 0.3 },
-        { opacity: 0.7, transform: 'scaleX(.95)', offset: 0.68 },
-        { opacity: 0, transform: 'scaleX(1.3)' },
-      ],
-      { duration: 5600, easing: 'ease-in-out', fill: 'forwards' }
-    );
+    const d = $('#dawn'), cl = $('#cur-l'), cr = $('#cur-r');
+    const T = 5600, t0 = performance.now();
+    cancelAnimationFrame(this._dawnRaf);
+    const ss = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+    const frame = (now) => {
+      const t = now - t0;
+      const w = this.win.getBoundingClientRect();
+      const L = cl.getBoundingClientRect().right, R = cr.getBoundingClientRect().left;
+      const gap = Math.max(0, R - L);
+      const g = gap / w.width;
+      d.style.left = `${L}px`;
+      d.style.width = `${gap}px`;
+      d.style.top = `${w.top}px`;
+      d.style.height = `${w.height * 1.22}px`;
+      d.style.opacity = (0.85 * Math.min(1, g * 4) * (1 - ss(0.55, 1, t / T))).toFixed(3);
+      if (t < T) this._dawnRaf = requestAnimationFrame(frame);
+      else d.style.opacity = 0;
+    };
+    this._dawnRaf = requestAnimationFrame(frame);
   }
 
   // 窗外的早晨：粉彩色、细细的手绘线、圆滚滚的云和小山。只有风景，不画角色
