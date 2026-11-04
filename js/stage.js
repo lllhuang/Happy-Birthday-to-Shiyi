@@ -1,8 +1,8 @@
-import { CONTENT } from './content.js?v=202611040241';
-import { audio } from './audio.js?v=202611040241';
-import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040241';
-import { listenForBlow } from './blow.js?v=202611040241';
-import { HAND } from './hand.js?v=202611040241';
+import { CONTENT } from './content.js?v=202611040255';
+import { audio } from './audio.js?v=202611040255';
+import { sparkle, confetti, Fireworks, CastleLight } from './fx.js?v=202611040255';
+import { listenForBlow } from './blow.js?v=202611040255';
+import { HAND } from './hand.js?v=202611040255';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -282,15 +282,22 @@ export class Stage {
   }
 
   // inWindow：镜头推近时放在窗户里面；atCurtain：镜头拉远停下以后放在窗帘下沿；都不给就照样式表
-  _hint(t, { inWindow = false, atCurtain = false } = {}) {
+  _isPhone() {
+    return Math.min(innerWidth, innerHeight) < 600 && innerHeight > innerWidth;
+  }
+
+  _hint(t, { inWindow = false, atCurtain = false, fallback = false } = {}) {
     const h = this.hint;
     h.classList.remove('show');
     clearTimeout(this._hintT);
     if (!t) return;
     this._hintT = setTimeout(() => {
       h.textContent = t;
-      if (atCurtain) this._placeAtCurtain();
-      else this._placeInWindow(inWindow);
+      if (atCurtain) {
+        this._placeAtCurtain();
+        // fallback：窗帘下沿落到屏幕外（很矮的手机）时，改放在窗户里面
+        if (fallback && h.getBoundingClientRect().bottom > innerHeight - 6) this._placeInWindow(true);
+      } else this._placeInWindow(inWindow);
       h.classList.add('show');
     }, 250);
   }
@@ -470,7 +477,8 @@ export class Stage {
       this.state = 'open';
       this._mine = 0;
       // 提示常驻：从出现开始一直在，后面跟着计数（0/5），她每放一朵加一，放满或者时间到了才慢慢淡出
-      this._hint(this._tapSkyText(), { inWindow: true });
+      // 手机竖屏：镜头推近后窗户下面还有空，提示放在窗户下面（中心线对齐窗帘下沿）；平板、电脑放在窗户里面
+      this._hint(this._tapSkyText(), this._isPhone() ? { atCurtain: true, fallback: true } : { inWindow: true });
       this._autoN = 0;
       this._hearts = [6, 14];
       // 三朵五角星：在第 2 到第 12 发里随机挑三发（避开爱心），早一点出现，她放得快也大多能看到
@@ -843,7 +851,7 @@ export class Stage {
     this.top.style.opacity = 0;
     if (!fast) {
       await sleep(4200);
-      this._hint(C.morning.tapBanner);
+      this._hint(C.morning.tapBanner, { atCurtain: true });
     }
   }
 
